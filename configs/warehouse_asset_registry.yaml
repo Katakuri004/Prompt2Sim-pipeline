@@ -1,0 +1,1894 @@
+assets:
+- id: real_warehouse_shelf_01
+  category: shelf
+  name: steel frame warehouse shelves
+  dimensions:
+  - 1.65
+  - 0.55
+  - 1.95
+  support_kind: container
+  support_heights:
+  - 0.25
+  - 0.5
+  - 0.75
+  tags:
+  - warehouse
+  - storage
+  - rack
+  - shelf
+  - parent
+  - support
+  - anchor
+  color:
+  - 0.42
+  - 0.42
+  - 0.4
+  glb_path: ..\assets\library\polyhaven\steel_frame_shelves_01\steel_frame_shelves_01_1k.gltf
+  source: polyhaven
+  source_id: steel_frame_shelves_01
+  source_url: https://polyhaven.com/a/steel_frame_shelves_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_warehouse_shelf_01.png
+- id: real_warehouse_shelf_02
+  category: shelf
+  name: second steel warehouse shelf
+  dimensions:
+  - 1.45
+  - 0.55
+  - 1.7
+  support_kind: container
+  support_heights:
+  - 0.25
+  - 0.5
+  - 0.75
+  tags:
+  - warehouse
+  - storage
+  - rack
+  - shelf
+  - parent
+  - support
+  color:
+  - 0.42
+  - 0.42
+  - 0.4
+  glb_path: ..\assets\library\polyhaven\steel_frame_shelves_02\steel_frame_shelves_02_1k.gltf
+  source: polyhaven
+  source_id: steel_frame_shelves_02
+  source_url: https://polyhaven.com/a/steel_frame_shelves_02
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_warehouse_shelf_02.png
+- id: real_cardboard_box_01
+  category: box
+  name: cardboard shipping box
+  dimensions:
+  - 0.46
+  - 0.36
+  - 0.34
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - cardboard
+  - box
+  - crate
+  - child
+  - storage
+  color:
+  - 0.68
+  - 0.49
+  - 0.28
+  glb_path: ..\assets\library\polyhaven\cardboard_box_01\cardboard_box_01_1k.gltf
+  source: polyhaven
+  source_id: cardboard_box_01
+  source_url: https://polyhaven.com/a/cardboard_box_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_cardboard_box_01.png
+- id: real_plastic_crate_01
+  category: box
+  name: plastic warehouse crate
+  dimensions:
+  - 0.56
+  - 0.4
+  - 0.32
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - plastic
+  - crate
+  - box
+  - child
+  - storage
+  color:
+  - 0.15
+  - 0.42
+  - 0.75
+  glb_path: ..\assets\library\polyhaven\plastic_crate_02\plastic_crate_02_1k.gltf
+  source: polyhaven
+  source_id: plastic_crate_02
+  source_url: https://polyhaven.com/a/plastic_crate_02
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_plastic_crate_01.png
+- id: real_plastic_crate_02
+  category: box
+  name: stackable plastic crate
+  dimensions:
+  - 0.52
+  - 0.38
+  - 0.3
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - plastic
+  - crate
+  - box
+  - child
+  - storage
+  color:
+  - 0.12
+  - 0.36
+  - 0.72
+  glb_path: ..\assets\library\polyhaven\plastic_crate_01\plastic_crate_01_1k.gltf
+  source: polyhaven
+  source_id: plastic_crate_01
+  source_url: https://polyhaven.com/a/plastic_crate_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_plastic_crate_02.png
+- id: real_wooden_crate_01
+  category: box
+  name: wooden warehouse crate
+  dimensions:
+  - 0.58
+  - 0.42
+  - 0.38
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - wooden
+  - crate
+  - box
+  - child
+  - storage
+  color:
+  - 0.48
+  - 0.31
+  - 0.18
+  glb_path: ..\assets\library\polyhaven\wooden_crate_01\wooden_crate_01_1k.gltf
+  source: polyhaven
+  source_id: wooden_crate_01
+  source_url: https://polyhaven.com/a/wooden_crate_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_wooden_crate_01.png
+- id: real_wooden_crate_02
+  category: box
+  name: weathered wooden crate
+  dimensions:
+  - 0.56
+  - 0.4
+  - 0.36
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - wooden
+  - crate
+  - box
+  - child
+  - storage
+  color:
+  - 0.44
+  - 0.28
+  - 0.16
+  glb_path: ..\assets\library\polyhaven\wooden_crate_02\wooden_crate_02_1k.gltf
+  source: polyhaven
+  source_id: wooden_crate_02
+  source_url: https://polyhaven.com/a/wooden_crate_02
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_wooden_crate_02.png
+- id: real_old_military_crate_01
+  category: box
+  name: old green supply crate
+  dimensions:
+  - 0.68
+  - 0.38
+  - 0.34
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - military
+  - crate
+  - box
+  - child
+  - storage
+  color:
+  - 0.22
+  - 0.28
+  - 0.18
+  glb_path: ..\assets\library\polyhaven\old_military_crate\old_military_crate_1k.gltf
+  source: polyhaven
+  source_id: old_military_crate
+  source_url: https://polyhaven.com/a/old_military_crate
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_old_military_crate_01.png
+- id: real_barrel_01
+  category: cylinder
+  name: industrial barrel
+  dimensions:
+  - 0.58
+  - 0.58
+  - 0.9
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - barrel
+  - drum
+  - floor
+  - industrial
+  color:
+  - 0.35
+  - 0.58
+  - 0.62
+  glb_path: ..\assets\library\polyhaven\Barrel_02\Barrel_02_1k.gltf
+  source: polyhaven
+  source_id: Barrel_02
+  source_url: https://polyhaven.com/a/Barrel_02
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_barrel_01.png
+- id: real_red_barrel_01
+  category: cylinder
+  name: red industrial oil barrel
+  dimensions:
+  - 0.58
+  - 0.58
+  - 0.9
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - barrel
+  - drum
+  - floor
+  - industrial
+  - oil
+  color:
+  - 0.64
+  - 0.1
+  - 0.08
+  glb_path: ..\assets\library\polyhaven\Barrel_01\Barrel_01_1k.gltf
+  source: polyhaven
+  source_id: Barrel_01
+  source_url: https://polyhaven.com/a/Barrel_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_red_barrel_01.png
+- id: real_blue_barrel_03
+  category: cylinder
+  name: blue painted industrial barrel
+  dimensions:
+  - 0.58
+  - 0.58
+  - 0.9
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - barrel
+  - drum
+  - floor
+  - industrial
+  - painted
+  color:
+  - 0.1
+  - 0.25
+  - 0.55
+  glb_path: ..\assets\library\polyhaven\barrel_03\barrel_03_1k.gltf
+  source: polyhaven
+  source_id: barrel_03
+  source_url: https://polyhaven.com/a/barrel_03
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_blue_barrel_03.png
+- id: real_small_lpg_tank_01
+  category: cylinder
+  name: small LPG tank
+  dimensions:
+  - 0.36
+  - 0.36
+  - 0.62
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tank
+  - cylinder
+  - floor
+  - industrial
+  - propane
+  color:
+  - 0.55
+  - 0.14
+  - 0.12
+  glb_path: ..\assets\library\polyhaven\small_lpg_tank\small_lpg_tank_1k.gltf
+  source: polyhaven
+  source_id: small_lpg_tank
+  source_url: https://polyhaven.com/a/small_lpg_tank
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_small_lpg_tank_01.png
+- id: real_propane_tank_01
+  category: cylinder
+  name: propane tank
+  dimensions:
+  - 0.42
+  - 0.42
+  - 0.72
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tank
+  - cylinder
+  - floor
+  - industrial
+  - propane
+  color:
+  - 0.58
+  - 0.14
+  - 0.12
+  glb_path: ..\assets\library\polyhaven\propane_tank\propane_tank_1k.gltf
+  source: polyhaven
+  source_id: propane_tank
+  source_url: https://polyhaven.com/a/propane_tank
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_propane_tank_01.png
+- id: real_plastic_storage_container_01
+  category: bin
+  name: plastic storage container
+  dimensions:
+  - 0.48
+  - 0.32
+  - 0.3
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - storage
+  - container
+  - bin
+  - box
+  - child
+  color:
+  - 0.22
+  - 0.4
+  - 0.72
+  glb_path: ..\assets\library\polyhaven\plastic_container\plastic_container_1k.gltf
+  source: polyhaven
+  source_id: plastic_container
+  source_url: https://polyhaven.com/a/plastic_container
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_plastic_storage_container_01.png
+- id: real_metal_trash_can_01
+  category: bin
+  name: metal trash can
+  dimensions:
+  - 0.48
+  - 0.48
+  - 0.82
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - bin
+  - trash
+  - metal
+  - floor
+  color:
+  - 0.42
+  - 0.42
+  - 0.4
+  glb_path: ..\assets\library\polyhaven\metal_trash_can\metal_trash_can_1k.gltf
+  source: polyhaven
+  source_id: metal_trash_can
+  source_url: https://polyhaven.com/a/metal_trash_can
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_metal_trash_can_01.png
+- id: real_metal_jerrycan_01
+  category: container
+  name: red metal jerry can
+  dimensions:
+  - 0.36
+  - 0.16
+  - 0.46
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - jerrycan
+  - fuel
+  - container
+  - floor
+  - industrial
+  color:
+  - 0.55
+  - 0.08
+  - 0.06
+  glb_path: ..\assets\library\polyhaven\metal_jerrycan\metal_jerrycan_1k.gltf
+  source: polyhaven
+  source_id: metal_jerrycan
+  source_url: https://polyhaven.com/a/metal_jerrycan
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_metal_jerrycan_01.png
+- id: real_green_jerrycan_01
+  category: container
+  name: green metal jerry can
+  dimensions:
+  - 0.36
+  - 0.16
+  - 0.46
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - jerrycan
+  - fuel
+  - container
+  - floor
+  - industrial
+  color:
+  - 0.22
+  - 0.3
+  - 0.18
+  glb_path: ..\assets\library\polyhaven\metal_jerrycan_green\metal_jerrycan_green_1k.gltf
+  source: polyhaven
+  source_id: metal_jerrycan_green
+  source_url: https://polyhaven.com/a/metal_jerrycan_green
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_green_jerrycan_01.png
+- id: real_cement_bag_01
+  category: bag
+  name: cement bag
+  dimensions:
+  - 0.62
+  - 0.42
+  - 0.18
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - bag
+  - cement
+  - construction
+  - floor
+  - storage
+  color:
+  - 0.58
+  - 0.54
+  - 0.48
+  glb_path: ..\assets\library\polyhaven\cement_bag\cement_bag_1k.gltf
+  source: polyhaven
+  source_id: cement_bag
+  source_url: https://polyhaven.com/a/cement_bag
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_cement_bag_01.png
+- id: real_hand_truck_01
+  category: hand_truck
+  name: warehouse hand truck
+  dimensions:
+  - 0.58
+  - 0.48
+  - 1.2
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - dolly
+  - cart
+  - floor
+  - logistics
+  color:
+  - 0.65
+  - 0.08
+  - 0.07
+  glb_path: ..\assets\library\polyhaven\hand_truck\hand_truck_1k.gltf
+  source: polyhaven
+  source_id: hand_truck
+  source_url: https://polyhaven.com/a/hand_truck
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_hand_truck_01.png
+- id: real_metal_toolbox_01
+  category: tool
+  name: metal toolbox
+  dimensions:
+  - 0.55
+  - 0.28
+  - 0.25
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - toolbox
+  - tool
+  - child
+  - maintenance
+  color:
+  - 0.5
+  - 0.08
+  - 0.08
+  glb_path: ..\assets\library\polyhaven\metal_toolbox\metal_toolbox_1k.gltf
+  source: polyhaven
+  source_id: metal_toolbox
+  source_url: https://polyhaven.com/a/metal_toolbox
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_metal_toolbox_01.png
+- id: real_bench_vice_01
+  category: tool
+  name: bench vice
+  dimensions:
+  - 0.42
+  - 0.2
+  - 0.24
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tool
+  - vice
+  - workshop
+  - maintenance
+  - child
+  color:
+  - 0.25
+  - 0.26
+  - 0.25
+  glb_path: ..\assets\library\polyhaven\bench_vice_01\bench_vice_01_1k.gltf
+  source: polyhaven
+  source_id: bench_vice_01
+  source_url: https://polyhaven.com/a/bench_vice_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_bench_vice_01.png
+- id: real_drill_01
+  category: tool
+  name: hand drill
+  dimensions:
+  - 0.32
+  - 0.1
+  - 0.24
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tool
+  - drill
+  - workshop
+  - maintenance
+  - child
+  color:
+  - 0.16
+  - 0.18
+  - 0.18
+  glb_path: ..\assets\library\polyhaven\Drill_01\Drill_01_1k.gltf
+  source: polyhaven
+  source_id: Drill_01
+  source_url: https://polyhaven.com/a/Drill_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_drill_01.png
+- id: real_pipe_wrench_01
+  category: tool
+  name: pipe wrench
+  dimensions:
+  - 0.38
+  - 0.1
+  - 0.06
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tool
+  - wrench
+  - workshop
+  - maintenance
+  - child
+  color:
+  - 0.35
+  - 0.08
+  - 0.06
+  glb_path: ..\assets\library\polyhaven\pipe_wrench\pipe_wrench_1k.gltf
+  source: polyhaven
+  source_id: pipe_wrench
+  source_url: https://polyhaven.com/a/pipe_wrench
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_pipe_wrench_01.png
+- id: real_ratchet_wrench_01
+  category: tool
+  name: ratchet wrench
+  dimensions:
+  - 0.3
+  - 0.08
+  - 0.05
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tool
+  - wrench
+  - workshop
+  - maintenance
+  - child
+  color:
+  - 0.35
+  - 0.35
+  - 0.34
+  glb_path: ..\assets\library\polyhaven\ratchet_wrench\ratchet_wrench_1k.gltf
+  source: polyhaven
+  source_id: ratchet_wrench
+  source_url: https://polyhaven.com/a/ratchet_wrench
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_ratchet_wrench_01.png
+- id: real_tool_chest_01
+  category: cabinet
+  name: rolling metal tool chest
+  dimensions:
+  - 0.78
+  - 0.48
+  - 0.86
+  support_kind: container
+  support_heights:
+  - 0.55
+  - 0.95
+  tags:
+  - warehouse
+  - tool_chest
+  - cabinet
+  - parent
+  - maintenance
+  - floor
+  color:
+  - 0.5
+  - 0.08
+  - 0.08
+  glb_path: ..\assets\library\polyhaven\metal_tool_chest\metal_tool_chest_1k.gltf
+  source: polyhaven
+  source_id: metal_tool_chest
+  source_url: https://polyhaven.com/a/metal_tool_chest
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_tool_chest_01.png
+- id: real_packing_table_01
+  category: table
+  name: packing work table
+  dimensions:
+  - 1.15
+  - 0.62
+  - 0.78
+  support_kind: surface
+  support_heights:
+  - 1.0
+  tags:
+  - warehouse
+  - table
+  - workbench
+  - packing
+  - support
+  - anchor
+  color:
+  - 0.55
+  - 0.36
+  - 0.2
+  glb_path: ..\assets\library\polyhaven\SchoolDesk_01\SchoolDesk_01_1k.gltf
+  source: polyhaven
+  source_id: SchoolDesk_01
+  source_url: https://polyhaven.com/a/SchoolDesk_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_packing_table_01.png
+- id: real_warehouse_chair_01
+  category: chair
+  name: warehouse desk chair
+  dimensions:
+  - 0.48
+  - 0.48
+  - 0.86
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - chair
+  - seat
+  - floor
+  color:
+  - 0.25
+  - 0.35
+  - 0.55
+  glb_path: ..\assets\library\polyhaven\SchoolChair_01\SchoolChair_01_1k.gltf
+  source: polyhaven
+  source_id: SchoolChair_01
+  source_url: https://polyhaven.com/a/SchoolChair_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_warehouse_chair_01.png
+- id: real_wooden_ladder_01
+  category: ladder
+  name: wooden ladder
+  dimensions:
+  - 0.52
+  - 0.18
+  - 1.75
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - ladder
+  - maintenance
+  - floor
+  - construction
+  color:
+  - 0.55
+  - 0.35
+  - 0.18
+  glb_path: ..\assets\library\polyhaven\wooden_ladder\wooden_ladder_1k.gltf
+  source: polyhaven
+  source_id: wooden_ladder
+  source_url: https://polyhaven.com/a/wooden_ladder
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_wooden_ladder_01.png
+- id: real_section_ladder_01
+  category: ladder
+  name: sectioned metal ladder
+  dimensions:
+  - 0.58
+  - 0.2
+  - 1.85
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - ladder
+  - maintenance
+  - floor
+  - construction
+  - metal
+  color:
+  - 0.55
+  - 0.55
+  - 0.5
+  glb_path: ..\assets\library\polyhaven\ladder_sectioned_01\ladder_sectioned_01_1k.gltf
+  source: polyhaven
+  source_id: ladder_sectioned_01
+  source_url: https://polyhaven.com/a/ladder_sectioned_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_section_ladder_01.png
+- id: real_power_box_01
+  category: utility_box
+  name: wall power box
+  dimensions:
+  - 0.58
+  - 0.22
+  - 0.72
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - utility
+  - power
+  - electrical
+  - wall
+  color:
+  - 0.35
+  - 0.35
+  - 0.34
+  glb_path: ..\assets\library\polyhaven\power_box_01\power_box_01_1k.gltf
+  source: polyhaven
+  source_id: power_box_01
+  source_url: https://polyhaven.com/a/power_box_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_power_box_01.png
+- id: real_utility_box_01
+  category: utility_box
+  name: industrial utility box
+  dimensions:
+  - 0.52
+  - 0.22
+  - 0.68
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - utility
+  - power
+  - electrical
+  - wall
+  color:
+  - 0.32
+  - 0.34
+  - 0.32
+  glb_path: ..\assets\library\polyhaven\utility_box_01\utility_box_01_1k.gltf
+  source: polyhaven
+  source_id: utility_box_01
+  source_url: https://polyhaven.com/a/utility_box_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_utility_box_01.png
+- id: real_wet_floor_sign_01
+  category: sign
+  name: yellow wet floor safety sign
+  dimensions:
+  - 0.34
+  - 0.16
+  - 0.72
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - safety
+  - sign
+  - floor
+  - warning
+  color:
+  - 0.95
+  - 0.78
+  - 0.08
+  glb_path: ..\assets\library\polyhaven\WetFloorSign_01\WetFloorSign_01_1k.gltf
+  source: polyhaven
+  source_id: WetFloorSign_01
+  source_url: https://polyhaven.com/a/WetFloorSign_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_wet_floor_sign_01.png
+- id: real_mounted_fluorescent_lights_01
+  category: light
+  name: mounted fluorescent lights
+  dimensions:
+  - 1.2
+  - 0.18
+  - 0.12
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - light
+  - fluorescent
+  - ceiling
+  - industrial
+  color:
+  - 0.85
+  - 0.85
+  - 0.78
+  glb_path: ..\assets\library\polyhaven\mounted_fluorescent_lights\mounted_fluorescent_lights_1k.gltf
+  source: polyhaven
+  source_id: mounted_fluorescent_lights
+  source_url: https://polyhaven.com/a/mounted_fluorescent_lights
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_mounted_fluorescent_lights_01.png
+- id: real_hanging_industrial_lamp_01
+  category: light
+  name: hanging industrial lamp
+  dimensions:
+  - 0.36
+  - 0.36
+  - 0.42
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - light
+  - lamp
+  - ceiling
+  - industrial
+  color:
+  - 0.16
+  - 0.16
+  - 0.15
+  glb_path: ..\assets\library\polyhaven\hanging_industrial_lamp\hanging_industrial_lamp_1k.gltf
+  source: polyhaven
+  source_id: hanging_industrial_lamp
+  source_url: https://polyhaven.com/a/hanging_industrial_lamp
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_hanging_industrial_lamp_01.png
+- id: real_rollup_door_01
+  category: door
+  name: warehouse roller shutter door
+  dimensions:
+  - 1.8
+  - 0.16
+  - 2.2
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - door
+  - roller
+  - shutter
+  - wall
+  - industrial
+  color:
+  - 0.45
+  - 0.45
+  - 0.43
+  glb_path: ..\assets\library\polyhaven\rollershutter_door\rollershutter_door_1k.gltf
+  source: polyhaven
+  source_id: rollershutter_door
+  source_url: https://polyhaven.com/a/rollershutter_door
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_rollup_door_01.png
+- id: real_airduct_01
+  category: duct
+  name: rectangular metal air duct
+  dimensions:
+  - 1.4
+  - 0.34
+  - 0.28
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - airduct
+  - duct
+  - ceiling
+  - industrial
+  color:
+  - 0.45
+  - 0.46
+  - 0.45
+  glb_path: ..\assets\library\polyhaven\modular_airduct_rectangular_01\modular_airduct_rectangular_01_1k.gltf
+  source: polyhaven
+  source_id: modular_airduct_rectangular_01
+  source_url: https://polyhaven.com/a/modular_airduct_rectangular_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_airduct_01.png
+- id: real_industrial_pipes_01
+  category: pipe
+  name: modular industrial pipes
+  dimensions:
+  - 1.25
+  - 0.28
+  - 0.44
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - pipes
+  - industrial
+  - wall
+  - utility
+  color:
+  - 0.38
+  - 0.38
+  - 0.36
+  glb_path: ..\assets\library\polyhaven\modular_industrial_pipes_01\modular_industrial_pipes_01_1k.gltf
+  source: polyhaven
+  source_id: modular_industrial_pipes_01
+  source_url: https://polyhaven.com/a/modular_industrial_pipes_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_industrial_pipes_01.png
+- id: real_modular_pipes_01
+  category: pipe
+  name: wall mounted modular pipes
+  dimensions:
+  - 1.25
+  - 0.22
+  - 0.32
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - pipes
+  - industrial
+  - wall
+  - utility
+  color:
+  - 0.34
+  - 0.34
+  - 0.33
+  glb_path: ..\assets\library\polyhaven\modular_pipes\modular_pipes_1k.gltf
+  source: polyhaven
+  source_id: modular_pipes
+  source_url: https://polyhaven.com/a/modular_pipes
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_modular_pipes_01.png
+- id: real_circular_airduct_01
+  category: duct
+  name: round metal air duct
+  dimensions:
+  - 1.35
+  - 0.32
+  - 0.32
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - airduct
+  - duct
+  - ceiling
+  - industrial
+  color:
+  - 0.46
+  - 0.47
+  - 0.46
+  glb_path: ..\assets\library\polyhaven\modular_airduct_circular_01\modular_airduct_circular_01_1k.gltf
+  source: polyhaven
+  source_id: modular_airduct_circular_01
+  source_url: https://polyhaven.com/a/modular_airduct_circular_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_circular_airduct_01.png
+- id: real_electric_cables_01
+  category: cable
+  name: modular electric cables
+  dimensions:
+  - 1.25
+  - 0.1
+  - 0.08
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - cables
+  - electrical
+  - wall
+  - utility
+  color:
+  - 0.08
+  - 0.08
+  - 0.08
+  glb_path: ..\assets\library\polyhaven\modular_electric_cables\modular_electric_cables_1k.gltf
+  source: polyhaven
+  source_id: modular_electric_cables
+  source_url: https://polyhaven.com/a/modular_electric_cables
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_electric_cables_01.png
+- id: real_concrete_barrier_01
+  category: barrier
+  name: concrete safety barrier
+  dimensions:
+  - 1.55
+  - 0.42
+  - 0.72
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - barrier
+  - safety
+  - floor
+  - industrial
+  color:
+  - 0.52
+  - 0.52
+  - 0.48
+  glb_path: ..\assets\library\polyhaven\concrete_road_barrier\concrete_road_barrier_1k.gltf
+  source: polyhaven
+  source_id: concrete_road_barrier
+  source_url: https://polyhaven.com/a/concrete_road_barrier
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_concrete_barrier_01.png
+- id: real_concrete_barrier_02
+  category: barrier
+  name: second concrete safety barrier
+  dimensions:
+  - 1.35
+  - 0.42
+  - 0.68
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - barrier
+  - safety
+  - floor
+  - industrial
+  color:
+  - 0.5
+  - 0.5
+  - 0.47
+  glb_path: ..\assets\library\polyhaven\concrete_road_barrier_02\concrete_road_barrier_02_1k.gltf
+  source: polyhaven
+  source_id: concrete_road_barrier_02
+  source_url: https://polyhaven.com/a/concrete_road_barrier_02
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_concrete_barrier_02.png
+- id: real_chainlink_fence_01
+  category: barrier
+  name: modular chainlink fence panel
+  dimensions:
+  - 1.75
+  - 0.08
+  - 1.55
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - fence
+  - barrier
+  - safety
+  - floor
+  - industrial
+  color:
+  - 0.42
+  - 0.42
+  - 0.4
+  glb_path: ..\assets\library\polyhaven\modular_chainlink_fence\modular_chainlink_fence_1k.gltf
+  source: polyhaven
+  source_id: modular_chainlink_fence
+  source_url: https://polyhaven.com/a/modular_chainlink_fence
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_chainlink_fence_01.png
+- id: real_security_camera_01
+  category: camera
+  name: wall security camera
+  dimensions:
+  - 0.28
+  - 0.18
+  - 0.18
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - camera
+  - security
+  - wall
+  - utility
+  color:
+  - 0.78
+  - 0.78
+  - 0.74
+  glb_path: ..\assets\library\polyhaven\security_camera_01\security_camera_01_1k.gltf
+  source: polyhaven
+  source_id: security_camera_01
+  source_url: https://polyhaven.com/a/security_camera_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_security_camera_01.png
+- id: real_security_light_01
+  category: light
+  name: wall mounted security light
+  dimensions:
+  - 0.34
+  - 0.22
+  - 0.26
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - light
+  - security
+  - wall
+  - industrial
+  color:
+  - 0.72
+  - 0.72
+  - 0.68
+  glb_path: ..\assets\library\polyhaven\security_light\security_light_1k.gltf
+  source: polyhaven
+  source_id: security_light
+  source_url: https://polyhaven.com/a/security_light
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_security_light_01.png
+- id: real_industrial_wall_lamp_01
+  category: light
+  name: industrial wall lamp
+  dimensions:
+  - 0.28
+  - 0.2
+  - 0.34
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - light
+  - lamp
+  - wall
+  - industrial
+  color:
+  - 0.18
+  - 0.18
+  - 0.16
+  glb_path: ..\assets\library\polyhaven\industrial_wall_lamp\industrial_wall_lamp_1k.gltf
+  source: polyhaven
+  source_id: industrial_wall_lamp
+  source_url: https://polyhaven.com/a/industrial_wall_lamp
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_industrial_wall_lamp_01.png
+- id: real_caged_hanging_light_01
+  category: light
+  name: caged hanging warehouse light
+  dimensions:
+  - 0.34
+  - 0.34
+  - 0.52
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - light
+  - lamp
+  - ceiling
+  - industrial
+  color:
+  - 0.12
+  - 0.12
+  - 0.11
+  glb_path: ..\assets\library\polyhaven\caged_hanging_light\caged_hanging_light_1k.gltf
+  source: polyhaven
+  source_id: caged_hanging_light
+  source_url: https://polyhaven.com/a/caged_hanging_light
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_caged_hanging_light_01.png
+- id: real_bolt_cutters_01
+  category: tool
+  name: bolt cutters
+  dimensions:
+  - 0.52
+  - 0.12
+  - 0.08
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tool
+  - cutters
+  - maintenance
+  - child
+  color:
+  - 0.18
+  - 0.18
+  - 0.16
+  glb_path: ..\assets\library\polyhaven\bolt_cutters_01\bolt_cutters_01_1k.gltf
+  source: polyhaven
+  source_id: bolt_cutters_01
+  source_url: https://polyhaven.com/a/bolt_cutters_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_bolt_cutters_01.png
+- id: real_crowbar_01
+  category: tool
+  name: red crowbar
+  dimensions:
+  - 0.58
+  - 0.08
+  - 0.06
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tool
+  - crowbar
+  - maintenance
+  - child
+  color:
+  - 0.48
+  - 0.06
+  - 0.05
+  glb_path: ..\assets\library\polyhaven\crowbar_01\crowbar_01_1k.gltf
+  source: polyhaven
+  source_id: crowbar_01
+  source_url: https://polyhaven.com/a/crowbar_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_crowbar_01.png
+- id: real_sledgehammer_01
+  category: tool
+  name: sledgehammer
+  dimensions:
+  - 0.72
+  - 0.16
+  - 0.1
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tool
+  - hammer
+  - maintenance
+  - child
+  color:
+  - 0.34
+  - 0.24
+  - 0.15
+  glb_path: ..\assets\library\polyhaven\sledgehammer_01\sledgehammer_01_1k.gltf
+  source: polyhaven
+  source_id: sledgehammer_01
+  source_url: https://polyhaven.com/a/sledgehammer_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_sledgehammer_01.png
+- id: real_measuring_tape_01
+  category: tool
+  name: measuring tape
+  dimensions:
+  - 0.13
+  - 0.1
+  - 0.06
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tool
+  - measuring
+  - maintenance
+  - child
+  color:
+  - 0.88
+  - 0.68
+  - 0.06
+  glb_path: ..\assets\library\polyhaven\measuring_tape_01\measuring_tape_01_1k.gltf
+  source: polyhaven
+  source_id: measuring_tape_01
+  source_url: https://polyhaven.com/a/measuring_tape_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_measuring_tape_01.png
+- id: real_flathead_screwdriver_01
+  category: tool
+  name: flathead screwdriver
+  dimensions:
+  - 0.24
+  - 0.04
+  - 0.04
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - tool
+  - screwdriver
+  - maintenance
+  - child
+  color:
+  - 0.64
+  - 0.08
+  - 0.06
+  glb_path: ..\assets\library\polyhaven\flathead_screwdriver\flathead_screwdriver_1k.gltf
+  source: polyhaven
+  source_id: flathead_screwdriver
+  source_url: https://polyhaven.com/a/flathead_screwdriver
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_flathead_screwdriver_01.png
+- id: real_plastic_jerrycan_01
+  category: container
+  name: plastic jerry can
+  dimensions:
+  - 0.34
+  - 0.18
+  - 0.42
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - jerrycan
+  - fuel
+  - container
+  - floor
+  - industrial
+  - plastic
+  color:
+  - 0.82
+  - 0.7
+  - 0.16
+  glb_path: ..\assets\library\polyhaven\plastic_jerrycan\plastic_jerrycan_1k.gltf
+  source: polyhaven
+  source_id: plastic_jerrycan
+  source_url: https://polyhaven.com/a/plastic_jerrycan
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_plastic_jerrycan_01.png
+- id: real_small_oil_can_01
+  category: container
+  name: small oil can
+  dimensions:
+  - 0.22
+  - 0.14
+  - 0.26
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - oil
+  - can
+  - container
+  - floor
+  - industrial
+  color:
+  - 0.62
+  - 0.1
+  - 0.08
+  glb_path: ..\assets\library\polyhaven\small_oil_can_01\small_oil_can_01_1k.gltf
+  source: polyhaven
+  source_id: small_oil_can_01
+  source_url: https://polyhaven.com/a/small_oil_can_01
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_small_oil_can_01.png
+- id: real_spray_paint_bottles_01
+  category: container
+  name: spray paint bottles
+  dimensions:
+  - 0.22
+  - 0.18
+  - 0.24
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - spray
+  - paint
+  - bottles
+  - container
+  - maintenance
+  - child
+  color:
+  - 0.55
+  - 0.1
+  - 0.08
+  glb_path: ..\assets\library\polyhaven\spray_paint_bottles\spray_paint_bottles_1k.gltf
+  source: polyhaven
+  source_id: spray_paint_bottles
+  source_url: https://polyhaven.com/a/spray_paint_bottles
+  license: CC0 1.0
+  attribution: Poly Haven
+  thumbnail_path: ..\assets\thumbnails\warehouse\real_spray_paint_bottles_01.png
+- id: proc_table_01
+  category: table
+  name: rectangular workbench
+  dimensions:
+  - 1.8
+  - 0.85
+  - 0.82
+  support_kind: surface
+  support_heights:
+  - 1.0
+  tags:
+  - anchor
+  - workbench
+  - lab
+  - support
+  color:
+  - 0.55
+  - 0.36
+  - 0.2
+- id: proc_shelf_01
+  category: shelf
+  name: open storage shelf
+  dimensions:
+  - 1.2
+  - 0.42
+  - 1.75
+  support_kind: container
+  support_heights:
+  - 0.25
+  - 0.5
+  - 0.75
+  tags:
+  - storage
+  - parent
+  - support
+  color:
+  - 0.42
+  - 0.42
+  - 0.4
+- id: proc_chair_01
+  category: chair
+  name: simple chair
+  dimensions:
+  - 0.55
+  - 0.55
+  - 0.9
+  support_kind: none
+  support_heights: []
+  tags:
+  - seat
+  - furniture
+  color:
+  - 0.25
+  - 0.35
+  - 0.55
+- id: proc_box_01
+  category: box
+  name: small cardboard box
+  dimensions:
+  - 0.38
+  - 0.32
+  - 0.28
+  support_kind: none
+  support_heights: []
+  tags:
+  - small
+  - storage
+  - child
+  color:
+  - 0.68
+  - 0.49
+  - 0.28
+- id: proc_cylinder_01
+  category: cylinder
+  name: upright cylinder
+  dimensions:
+  - 0.32
+  - 0.32
+  - 0.55
+  support_kind: none
+  support_heights: []
+  tags:
+  - small
+  - round
+  - container
+  color:
+  - 0.35
+  - 0.58
+  - 0.62
+- id: proc_robot_arm_01
+  category: robot_arm
+  name: benchtop robot arm
+  dimensions:
+  - 0.55
+  - 0.48
+  - 0.8
+  support_kind: none
+  support_heights: []
+  tags:
+  - robotics
+  - lab
+  - child
+  color:
+  - 0.86
+  - 0.55
+  - 0.16
+- id: proc_cabinet_01
+  category: cabinet
+  name: lab cabinet
+  dimensions:
+  - 0.9
+  - 0.5
+  - 1.05
+  support_kind: container
+  support_heights:
+  - 0.45
+  - 0.9
+  tags:
+  - storage
+  - parent
+  - support
+  color:
+  - 0.36
+  - 0.4
+  - 0.45
+- id: proc_tool_01
+  category: tool
+  name: hand tool
+  dimensions:
+  - 0.42
+  - 0.14
+  - 0.08
+  support_kind: none
+  support_heights: []
+  tags:
+  - small
+  - lab
+  - child
+  color:
+  - 0.78
+  - 0.08
+  - 0.05
+- id: proc_monitor_01
+  category: monitor
+  name: flat monitor
+  dimensions:
+  - 0.62
+  - 0.18
+  - 0.45
+  support_kind: none
+  support_heights: []
+  tags:
+  - screen
+  - lab
+  - child
+  color:
+  - 0.05
+  - 0.06
+  - 0.07
+- id: proc_bin_01
+  category: bin
+  name: utility bin
+  dimensions:
+  - 0.5
+  - 0.42
+  - 0.55
+  support_kind: none
+  support_heights: []
+  tags:
+  - storage
+  - floor
+  color:
+  - 0.18
+  - 0.47
+  - 0.35
+- id: hf_forklift_orange_01
+  category: forklift
+  name: orange warehouse forklift
+  dimensions:
+  - 2.45
+  - 1.05
+  - 2.05
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - forklift
+  - vehicle
+  - logistics
+  - floor
+  - industrial
+  color:
+  - 0.95
+  - 0.48
+  - 0.08
+  glb_path: ..\assets\library\hf_simready\hf_forklift_orange_01\hf_forklift_orange_01.glb
+  source: huggingface_simready
+  source_id: Props/general/SM_Forklift_A01_Orange_01/SM_Forklift_A01_Orange_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_Forklift_A01_Orange_01/SM_Forklift_A01_Orange_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_forklift_orange_01\hf_forklift_orange_01.png
+- id: hf_wood_pallet_01
+  category: pallet
+  name: wooden warehouse pallet
+  dimensions:
+  - 1.2
+  - 1.0
+  - 0.16
+  support_kind: surface
+  support_heights:
+  - 1.0
+  tags:
+  - warehouse
+  - pallet
+  - wooden
+  - floor
+  - support
+  - logistics
+  color:
+  - 0.56
+  - 0.36
+  - 0.18
+  glb_path: ..\assets\library\hf_simready\hf_wood_pallet_01\hf_wood_pallet_01.glb
+  source: huggingface_simready
+  source_id: Props/general/Pallet_A1/Pallet_A1.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/Pallet_A1/Pallet_A1.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_wood_pallet_01\hf_wood_pallet_01.png
+- id: hf_wrapped_pallet_load_01
+  category: pallet_load
+  name: wrapped pallet load
+  dimensions:
+  - 1.25
+  - 1.05
+  - 1.25
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - pallet
+  - wrapped
+  - boxes
+  - load
+  - logistics
+  - floor
+  color:
+  - 0.72
+  - 0.7
+  - 0.62
+  glb_path: ..\assets\library\hf_simready\hf_wrapped_pallet_load_01\hf_wrapped_pallet_load_01.glb
+  source: huggingface_simready
+  source_id: Props/assembly/sm_palletcomposition_a100_01/sm_palletcomposition_a100_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/assembly/sm_palletcomposition_a100_01/sm_palletcomposition_a100_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_wrapped_pallet_load_01\hf_wrapped_pallet_load_01.png
+- id: hf_pallet_rack_large_01
+  category: shelf
+  name: large pallet rack
+  dimensions:
+  - 2.8
+  - 0.95
+  - 2.75
+  support_kind: container
+  support_heights:
+  - 0.33
+  - 0.66
+  - 0.92
+  tags:
+  - warehouse
+  - pallet_rack
+  - rack
+  - shelf
+  - storage
+  - support
+  - anchor
+  - industrial
+  color:
+  - 0.85
+  - 0.42
+  - 0.05
+  glb_path: ..\assets\library\hf_simready\hf_pallet_rack_large_01\hf_pallet_rack_large_01.glb
+  source: huggingface_simready
+  source_id: Props/assembly/RackLarge_A1/RackLarge_A1.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/assembly/RackLarge_A1/RackLarge_A1.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_pallet_rack_large_01\hf_pallet_rack_large_01.png
+- id: hf_trolley_01
+  category: cart
+  name: warehouse platform cart
+  dimensions:
+  - 1.0
+  - 0.62
+  - 1.05
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - trolley
+  - cart
+  - floor
+  - logistics
+  color:
+  - 0.5
+  - 0.52
+  - 0.5
+  glb_path: ..\assets\library\hf_simready\hf_trolley_01\hf_trolley_01.glb
+  source: huggingface_simready
+  source_id: Props/general/sm_platformluggagecart_a01_01/sm_platformluggagecart_a01_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/sm_platformluggagecart_a01_01/sm_platformluggagecart_a01_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_trolley_01\hf_trolley_01.png
+- id: hf_barcode_scanner_01
+  category: scanner
+  name: handheld barcode scanner
+  dimensions:
+  - 0.18
+  - 0.08
+  - 0.16
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - scanner
+  - barcode
+  - handheld
+  - tool
+  - child
+  color:
+  - 0.06
+  - 0.06
+  - 0.06
+  glb_path: ..\assets\library\hf_simready\hf_barcode_scanner_01\hf_barcode_scanner_01.glb
+  source: huggingface_simready
+  source_id: Props/general/SM_BarcodeScanner_A01_01/SM_BarcodeScanner_A01_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_BarcodeScanner_A01_01/SM_BarcodeScanner_A01_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_barcode_scanner_01\hf_barcode_scanner_01.png
+- id: hf_plastic_crate_blue_01
+  category: box
+  name: blue plastic warehouse crate
+  dimensions:
+  - 0.55
+  - 0.38
+  - 0.28
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - plastic
+  - crate
+  - box
+  - child
+  - storage
+  color:
+  - 0.05
+  - 0.2
+  - 0.75
+  glb_path: ..\assets\library\hf_simready\hf_plastic_crate_blue_01\hf_plastic_crate_blue_01.glb
+  source: huggingface_simready
+  source_id: Props/general/SM_Crate_A01_Blue_01/SM_Crate_A01_Blue_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_Crate_A01_Blue_01/SM_Crate_A01_Blue_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_plastic_crate_blue_01\hf_plastic_crate_blue_01.png
+- id: hf_orange_safety_barrier_01
+  category: barrier
+  name: orange plastic wall barrier
+  dimensions:
+  - 1.25
+  - 0.35
+  - 1.05
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - barrier
+  - safety
+  - orange
+  - floor
+  - industrial
+  color:
+  - 0.95
+  - 0.42
+  - 0.06
+  glb_path: ..\assets\library\hf_simready\hf_orange_safety_barrier_01\hf_orange_safety_barrier_01.glb
+  source: huggingface_simready
+  source_id: Props/general/SM_PlasticWallBarrier_A03_Orange_01/SM_PlasticWallBarrier_A03_Orange_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_PlasticWallBarrier_A03_Orange_01/SM_PlasticWallBarrier_A03_Orange_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_orange_safety_barrier_01\hf_orange_safety_barrier_01.png
+- id: hf_safety_tape_yellow_black_01
+  category: floor_marking
+  name: yellow black warehouse safety tape
+  dimensions:
+  - 2.2
+  - 0.1
+  - 0.012
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - safety
+  - tape
+  - floor
+  - aisle
+  - marking
+  color:
+  - 0.95
+  - 0.72
+  - 0.06
+  glb_path: ..\assets\library\hf_simready\hf_safety_tape_yellow_black_01\hf_safety_tape_yellow_black_01.glb
+  source: huggingface_simready
+  source_id: Props/general/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_safety_tape_yellow_black_01\hf_safety_tape_yellow_black_01.png

@@ -1,0 +1,558 @@
+{
+  "assets": [
+    {
+      "asset_id": "real_warehouse_shelf_01",
+      "dimensions": [
+        1.65,
+        0.55,
+        1.95
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\steel_frame_shelves_01\\steel_frame_shelves_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_warehouse_shelf_01.png"
+    },
+    {
+      "asset_id": "real_warehouse_shelf_02",
+      "dimensions": [
+        1.45,
+        0.55,
+        1.7
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\steel_frame_shelves_02\\steel_frame_shelves_02_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_warehouse_shelf_02.png"
+    },
+    {
+      "asset_id": "real_cardboard_box_01",
+      "dimensions": [
+        0.46,
+        0.36,
+        0.34
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\cardboard_box_01\\cardboard_box_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_cardboard_box_01.png"
+    },
+    {
+      "asset_id": "real_plastic_crate_01",
+      "dimensions": [
+        0.56,
+        0.4,
+        0.32
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\plastic_crate_02\\plastic_crate_02_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_plastic_crate_01.png"
+    },
+    {
+      "asset_id": "real_plastic_crate_02",
+      "dimensions": [
+        0.52,
+        0.38,
+        0.3
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\plastic_crate_01\\plastic_crate_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_plastic_crate_02.png"
+    },
+    {
+      "asset_id": "real_wooden_crate_01",
+      "dimensions": [
+        0.58,
+        0.42,
+        0.38
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\wooden_crate_01\\wooden_crate_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_wooden_crate_01.png"
+    },
+    {
+      "asset_id": "real_wooden_crate_02",
+      "dimensions": [
+        0.56,
+        0.4,
+        0.36
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\wooden_crate_02\\wooden_crate_02_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_wooden_crate_02.png"
+    },
+    {
+      "asset_id": "real_old_military_crate_01",
+      "dimensions": [
+        0.68,
+        0.38,
+        0.34
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\old_military_crate\\old_military_crate_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_old_military_crate_01.png"
+    },
+    {
+      "asset_id": "real_barrel_01",
+      "dimensions": [
+        0.58,
+        0.58,
+        0.9
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\Barrel_02\\Barrel_02_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_barrel_01.png"
+    },
+    {
+      "asset_id": "real_red_barrel_01",
+      "dimensions": [
+        0.58,
+        0.58,
+        0.9
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\Barrel_01\\Barrel_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_red_barrel_01.png"
+    },
+    {
+      "asset_id": "real_blue_barrel_03",
+      "dimensions": [
+        0.58,
+        0.58,
+        0.9
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\barrel_03\\barrel_03_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_blue_barrel_03.png"
+    },
+    {
+      "asset_id": "real_small_lpg_tank_01",
+      "dimensions": [
+        0.36,
+        0.36,
+        0.62
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\small_lpg_tank\\small_lpg_tank_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_small_lpg_tank_01.png"
+    },
+    {
+      "asset_id": "real_propane_tank_01",
+      "dimensions": [
+        0.42,
+        0.42,
+        0.72
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\propane_tank\\propane_tank_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_propane_tank_01.png"
+    },
+    {
+      "asset_id": "real_plastic_storage_container_01",
+      "dimensions": [
+        0.48,
+        0.32,
+        0.3
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\plastic_container\\plastic_container_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_plastic_storage_container_01.png"
+    },
+    {
+      "asset_id": "real_metal_trash_can_01",
+      "dimensions": [
+        0.48,
+        0.48,
+        0.82
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\metal_trash_can\\metal_trash_can_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_metal_trash_can_01.png"
+    },
+    {
+      "asset_id": "real_metal_jerrycan_01",
+      "dimensions": [
+        0.36,
+        0.16,
+        0.46
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\metal_jerrycan\\metal_jerrycan_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_metal_jerrycan_01.png"
+    },
+    {
+      "asset_id": "real_green_jerrycan_01",
+      "dimensions": [
+        0.36,
+        0.16,
+        0.46
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\metal_jerrycan_green\\metal_jerrycan_green_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_green_jerrycan_01.png"
+    },
+    {
+      "asset_id": "real_cement_bag_01",
+      "dimensions": [
+        0.62,
+        0.42,
+        0.18
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\cement_bag\\cement_bag_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_cement_bag_01.png"
+    },
+    {
+      "asset_id": "real_hand_truck_01",
+      "dimensions": [
+        0.58,
+        0.48,
+        1.2
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\hand_truck\\hand_truck_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_hand_truck_01.png"
+    },
+    {
+      "asset_id": "real_metal_toolbox_01",
+      "dimensions": [
+        0.55,
+        0.28,
+        0.25
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\metal_toolbox\\metal_toolbox_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_metal_toolbox_01.png"
+    },
+    {
+      "asset_id": "real_bench_vice_01",
+      "dimensions": [
+        0.42,
+        0.2,
+        0.24
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\bench_vice_01\\bench_vice_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_bench_vice_01.png"
+    },
+    {
+      "asset_id": "real_drill_01",
+      "dimensions": [
+        0.32,
+        0.1,
+        0.24
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\Drill_01\\Drill_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_drill_01.png"
+    },
+    {
+      "asset_id": "real_pipe_wrench_01",
+      "dimensions": [
+        0.38,
+        0.1,
+        0.06
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\pipe_wrench\\pipe_wrench_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_pipe_wrench_01.png"
+    },
+    {
+      "asset_id": "real_ratchet_wrench_01",
+      "dimensions": [
+        0.3,
+        0.08,
+        0.05
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\ratchet_wrench\\ratchet_wrench_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_ratchet_wrench_01.png"
+    },
+    {
+      "asset_id": "real_tool_chest_01",
+      "dimensions": [
+        0.78,
+        0.48,
+        0.86
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\metal_tool_chest\\metal_tool_chest_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_tool_chest_01.png"
+    },
+    {
+      "asset_id": "real_packing_table_01",
+      "dimensions": [
+        1.15,
+        0.62,
+        0.78
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\SchoolDesk_01\\SchoolDesk_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_packing_table_01.png"
+    },
+    {
+      "asset_id": "real_warehouse_chair_01",
+      "dimensions": [
+        0.48,
+        0.48,
+        0.86
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\SchoolChair_01\\SchoolChair_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_warehouse_chair_01.png"
+    },
+    {
+      "asset_id": "real_wooden_ladder_01",
+      "dimensions": [
+        0.52,
+        0.18,
+        1.75
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\wooden_ladder\\wooden_ladder_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_wooden_ladder_01.png"
+    },
+    {
+      "asset_id": "real_section_ladder_01",
+      "dimensions": [
+        0.58,
+        0.2,
+        1.85
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\ladder_sectioned_01\\ladder_sectioned_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_section_ladder_01.png"
+    },
+    {
+      "asset_id": "real_power_box_01",
+      "dimensions": [
+        0.58,
+        0.22,
+        0.72
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\power_box_01\\power_box_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_power_box_01.png"
+    },
+    {
+      "asset_id": "real_utility_box_01",
+      "dimensions": [
+        0.52,
+        0.22,
+        0.68
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\utility_box_01\\utility_box_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_utility_box_01.png"
+    },
+    {
+      "asset_id": "real_wet_floor_sign_01",
+      "dimensions": [
+        0.34,
+        0.16,
+        0.72
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\WetFloorSign_01\\WetFloorSign_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_wet_floor_sign_01.png"
+    },
+    {
+      "asset_id": "real_mounted_fluorescent_lights_01",
+      "dimensions": [
+        1.2,
+        0.18,
+        0.12
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\mounted_fluorescent_lights\\mounted_fluorescent_lights_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_mounted_fluorescent_lights_01.png"
+    },
+    {
+      "asset_id": "real_hanging_industrial_lamp_01",
+      "dimensions": [
+        0.36,
+        0.36,
+        0.42
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\hanging_industrial_lamp\\hanging_industrial_lamp_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_hanging_industrial_lamp_01.png"
+    },
+    {
+      "asset_id": "real_rollup_door_01",
+      "dimensions": [
+        1.8,
+        0.16,
+        2.2
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\rollershutter_door\\rollershutter_door_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_rollup_door_01.png"
+    },
+    {
+      "asset_id": "real_airduct_01",
+      "dimensions": [
+        1.4,
+        0.34,
+        0.28
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\modular_airduct_rectangular_01\\modular_airduct_rectangular_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_airduct_01.png"
+    },
+    {
+      "asset_id": "real_industrial_pipes_01",
+      "dimensions": [
+        1.25,
+        0.28,
+        0.44
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\modular_industrial_pipes_01\\modular_industrial_pipes_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_industrial_pipes_01.png"
+    },
+    {
+      "asset_id": "real_modular_pipes_01",
+      "dimensions": [
+        1.25,
+        0.22,
+        0.32
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\modular_pipes\\modular_pipes_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_modular_pipes_01.png"
+    },
+    {
+      "asset_id": "real_circular_airduct_01",
+      "dimensions": [
+        1.35,
+        0.32,
+        0.32
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\modular_airduct_circular_01\\modular_airduct_circular_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_circular_airduct_01.png"
+    },
+    {
+      "asset_id": "real_electric_cables_01",
+      "dimensions": [
+        1.25,
+        0.1,
+        0.08
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\modular_electric_cables\\modular_electric_cables_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_electric_cables_01.png"
+    },
+    {
+      "asset_id": "real_concrete_barrier_01",
+      "dimensions": [
+        1.55,
+        0.42,
+        0.72
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\concrete_road_barrier\\concrete_road_barrier_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_concrete_barrier_01.png"
+    },
+    {
+      "asset_id": "real_concrete_barrier_02",
+      "dimensions": [
+        1.35,
+        0.42,
+        0.68
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\concrete_road_barrier_02\\concrete_road_barrier_02_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_concrete_barrier_02.png"
+    },
+    {
+      "asset_id": "real_chainlink_fence_01",
+      "dimensions": [
+        1.75,
+        0.08,
+        1.55
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\modular_chainlink_fence\\modular_chainlink_fence_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_chainlink_fence_01.png"
+    },
+    {
+      "asset_id": "real_security_camera_01",
+      "dimensions": [
+        0.28,
+        0.18,
+        0.18
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\security_camera_01\\security_camera_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_security_camera_01.png"
+    },
+    {
+      "asset_id": "real_security_light_01",
+      "dimensions": [
+        0.34,
+        0.22,
+        0.26
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\security_light\\security_light_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_security_light_01.png"
+    },
+    {
+      "asset_id": "real_industrial_wall_lamp_01",
+      "dimensions": [
+        0.28,
+        0.2,
+        0.34
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\industrial_wall_lamp\\industrial_wall_lamp_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_industrial_wall_lamp_01.png"
+    },
+    {
+      "asset_id": "real_caged_hanging_light_01",
+      "dimensions": [
+        0.34,
+        0.34,
+        0.52
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\caged_hanging_light\\caged_hanging_light_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_caged_hanging_light_01.png"
+    },
+    {
+      "asset_id": "real_bolt_cutters_01",
+      "dimensions": [
+        0.52,
+        0.12,
+        0.08
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\bolt_cutters_01\\bolt_cutters_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_bolt_cutters_01.png"
+    },
+    {
+      "asset_id": "real_crowbar_01",
+      "dimensions": [
+        0.58,
+        0.08,
+        0.06
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\crowbar_01\\crowbar_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_crowbar_01.png"
+    },
+    {
+      "asset_id": "real_sledgehammer_01",
+      "dimensions": [
+        0.72,
+        0.16,
+        0.1
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\sledgehammer_01\\sledgehammer_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_sledgehammer_01.png"
+    },
+    {
+      "asset_id": "real_measuring_tape_01",
+      "dimensions": [
+        0.13,
+        0.1,
+        0.06
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\measuring_tape_01\\measuring_tape_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_measuring_tape_01.png"
+    },
+    {
+      "asset_id": "real_flathead_screwdriver_01",
+      "dimensions": [
+        0.24,
+        0.04,
+        0.04
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\flathead_screwdriver\\flathead_screwdriver_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_flathead_screwdriver_01.png"
+    },
+    {
+      "asset_id": "real_plastic_jerrycan_01",
+      "dimensions": [
+        0.34,
+        0.18,
+        0.42
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\plastic_jerrycan\\plastic_jerrycan_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_plastic_jerrycan_01.png"
+    },
+    {
+      "asset_id": "real_small_oil_can_01",
+      "dimensions": [
+        0.22,
+        0.14,
+        0.26
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\small_oil_can_01\\small_oil_can_01_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_small_oil_can_01.png"
+    },
+    {
+      "asset_id": "real_spray_paint_bottles_01",
+      "dimensions": [
+        0.22,
+        0.18,
+        0.24
+      ],
+      "mesh_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\library\\polyhaven\\spray_paint_bottles\\spray_paint_bottles_1k.gltf",
+      "thumbnail_path": "C:\\Users\\Kata\\Desktop\\scenthesis-exp\\assets\\thumbnails\\warehouse\\real_spray_paint_bottles_01.png"
+    }
+  ],
+  "resolution": [
+    512,
+    512
+  ]
+}

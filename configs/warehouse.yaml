@@ -1,0 +1,37 @@
+seed: 7
+scene:
+  bounds: [8.0, 7.0, 3.2]
+  units: meters
+openai:
+  model: gpt-4o-mini
+  vision_model: gpt-4o-mini
+  image_model: gpt-image-1
+  max_retries: 5
+vision_guidance:
+  enabled: false
+  image_size: 1024x1024
+  image_quality: low
+  confidence_threshold: 0.35
+  scene_fill: 0.78
+layout:
+  max_optimizer_iters: 100
+  random_restarts: 4
+  boundary_margin: 0.15
+  contact_tolerance: 0.04
+mesh_physics:
+  enabled: true
+  require_meshes: true
+  sample_points: 256
+  collision_distance: 0.035
+  support_tolerance: 0.04
+  max_refine_iters: 6
+render:
+  resolution: [1200, 900]
+  camera: three_quarter
+  blender_path_env: BLENDER_PATH
+paths:
+  asset_registry: configs/warehouse_asset_registry.yaml
+  planner_prompt: configs/prompts/planner_system.txt
+  vision_scene_graph_prompt: configs/prompts/vision_scene_graph_system.txt
+  judge_prompt: configs/prompts/judge_system.txt
+  repair_prompt: configs/prompts/repair_system.txt

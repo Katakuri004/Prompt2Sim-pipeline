@@ -1,0 +1,156 @@
+name: hf_simready_warehouse_curated_v1
+source_family: huggingface_simready
+bulk_download_allowed: false
+disk_budget_gb: 15
+entries:
+  - id: hf_forklift_orange_01
+    category: forklift
+    name: orange warehouse forklift
+    dimensions: [2.45, 1.05, 2.05]
+    support_kind: none
+    support_heights: []
+    tags: [warehouse, forklift, vehicle, logistics, floor, industrial]
+    color: [0.95, 0.48, 0.08]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/SM_Forklift_A01_Orange_01/SM_Forklift_A01_Orange_01.usd
+    thumbnail_path: Props/general/SM_Forklift_A01_Orange_01/.thumbs/256x256/SM_Forklift_A01_Orange_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_wood_pallet_01
+    category: pallet
+    name: wooden warehouse pallet
+    dimensions: [1.2, 1.0, 0.16]
+    support_kind: surface
+    support_heights: [1.0]
+    tags: [warehouse, pallet, wooden, floor, support, logistics]
+    color: [0.56, 0.36, 0.18]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/Pallet_A1/Pallet_A1.usd
+    thumbnail_path: Props/general/Pallet_A1/.thumbs/256x256/Pallet_A1.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_wrapped_pallet_load_01
+    category: pallet_load
+    name: wrapped pallet load
+    dimensions: [1.25, 1.05, 1.25]
+    support_kind: none
+    support_heights: []
+    tags: [warehouse, pallet, wrapped, boxes, load, logistics, floor]
+    color: [0.72, 0.70, 0.62]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/assembly/sm_palletcomposition_a100_01/sm_palletcomposition_a100_01.usd
+    include_prefixes:
+      - Props/general/SM_Crate_A20_Orange_01
+      - Props/general/SM_Crate_A20_Green_01
+      - Props/general/SM_Crate_A02_Black_01
+      - Props/general/SM_ExportPallet_A02_RoughBlackA_01
+      - Props/general/SM_Crate_A01_White_01
+    thumbnail_path: Props/assembly/sm_palletcomposition_a100_01/.thumbs/256x256/sm_palletcomposition_a100_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_pallet_rack_large_01
+    category: shelf
+    name: large pallet rack
+    dimensions: [2.8, 0.95, 2.75]
+    support_kind: container
+    support_heights: [0.33, 0.66, 0.92]
+    tags: [warehouse, pallet_rack, rack, shelf, storage, support, anchor, industrial]
+    color: [0.85, 0.42, 0.05]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/assembly/RackLarge_A1/RackLarge_A1.usd
+    include_prefixes:
+      - Props/general/Cardbox_A1
+      - Props/general/Cardbox_A2
+      - Props/general/Cardbox_A3
+      - Props/general/Cardbox_B1
+      - Props/general/Cardbox_B2
+      - Props/general/Cardbox_C1
+      - Props/general/Cardbox_C2
+      - Props/general/Cardbox_C3
+      - Props/general/Cardbox_D1
+      - Props/general/Cardbox_D2
+      - Props/general/RackLargeEmpty_A1
+    thumbnail_path: Props/assembly/RackLarge_A1/.thumbs/256x256/RackLarge_A1.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_trolley_01
+    category: cart
+    name: warehouse platform cart
+    dimensions: [1.0, 0.62, 1.05]
+    support_kind: none
+    support_heights: []
+    tags: [warehouse, trolley, cart, floor, logistics]
+    color: [0.50, 0.52, 0.50]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/sm_platformluggagecart_a01_01/sm_platformluggagecart_a01_01.usd
+    thumbnail_path: Props/general/sm_platformluggagecart_a01_01/.thumbs/256x256/sm_platformluggagecart_a01_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_barcode_scanner_01
+    category: scanner
+    name: handheld barcode scanner
+    dimensions: [0.18, 0.08, 0.16]
+    support_kind: none
+    support_heights: []
+    tags: [warehouse, scanner, barcode, handheld, tool, child]
+    color: [0.06, 0.06, 0.06]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/SM_BarcodeScanner_A01_01/SM_BarcodeScanner_A01_01.usd
+    thumbnail_path: Props/general/SM_BarcodeScanner_A01_01/.thumbs/256x256/SM_BarcodeScanner_A01_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_plastic_crate_blue_01
+    category: box
+    name: blue plastic warehouse crate
+    dimensions: [0.55, 0.38, 0.28]
+    support_kind: none
+    support_heights: []
+    tags: [warehouse, plastic, crate, box, child, storage]
+    color: [0.05, 0.20, 0.75]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/SM_Crate_A01_Blue_01/SM_Crate_A01_Blue_01.usd
+    thumbnail_path: Props/general/SM_Crate_A01_Blue_01/.thumbs/256x256/SM_Crate_A01_Blue_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_orange_safety_barrier_01
+    category: barrier
+    name: orange plastic wall barrier
+    dimensions: [1.25, 0.35, 1.05]
+    support_kind: none
+    support_heights: []
+    tags: [warehouse, barrier, safety, orange, floor, industrial]
+    color: [0.95, 0.42, 0.06]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/SM_PlasticWallBarrier_A03_Orange_01/SM_PlasticWallBarrier_A03_Orange_01.usd
+    thumbnail_path: Props/general/SM_PlasticWallBarrier_A03_Orange_01/.thumbs/256x256/SM_PlasticWallBarrier_A03_Orange_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_safety_tape_yellow_black_01
+    category: floor_marking
+    name: yellow black warehouse safety tape
+    dimensions: [2.2, 0.10, 0.012]
+    support_kind: none
+    support_heights: []
+    tags: [warehouse, safety, tape, floor, aisle, marking]
+    color: [0.95, 0.72, 0.06]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01.usd
+    thumbnail_path: Props/general/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01/.thumbs/256x256/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+unresolved_targets:
+  - category: conveyor
+    desired_terms: [conveyor, roller conveyor, pallet conveyor]
+    reason: No conveyor asset was found by filename in nvidia/PhysicalAI-SimReady-Warehouse-01 during controlled source discovery.
+  - category: robot_arm
+    desired_terms: [robot arm, industrial manipulator, cobot]
+    reason: No robot arm/manipulator asset was found by filename in nvidia/PhysicalAI-SimReady-Warehouse-01 during controlled source discovery.

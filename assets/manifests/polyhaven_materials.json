@@ -1,0 +1,63 @@
+{
+  "license": "CC0 1.0",
+  "material_count": 2,
+  "materials": [
+    {
+      "downloaded_bytes": 411654,
+      "id": "concrete_floor_worn_001",
+      "license": "CC0 1.0",
+      "maps": {
+        "diffuse": {
+          "md5": "e35597cca586150b1ab2aa9a331a39c5",
+          "path": "assets\\materials\\polyhaven\\concrete_floor_worn_001\\concrete_floor_worn_001_diff_1k.jpg",
+          "size": 118806,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_diff_1k.jpg"
+        },
+        "normal": {
+          "md5": "9de6626758f8793b71182b892c110827",
+          "path": "assets\\materials\\polyhaven\\concrete_floor_worn_001\\concrete_floor_worn_001_nor_gl_1k.jpg",
+          "size": 110906,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_1k.jpg"
+        },
+        "roughness": {
+          "md5": "b158eae73029ac6a849481274a0e1b35",
+          "path": "assets\\materials\\polyhaven\\concrete_floor_worn_001\\concrete_floor_worn_001_rough_1k.jpg",
+          "size": 181942,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_floor_worn_001/concrete_floor_worn_001_rough_1k.jpg"
+        }
+      },
+      "resolution": "1k",
+      "source": "polyhaven",
+      "source_url": "https://polyhaven.com/a/concrete_floor_worn_001"
+    },
+    {
+      "downloaded_bytes": 658527,
+      "id": "factory_wall",
+      "license": "CC0 1.0",
+      "maps": {
+        "diffuse": {
+          "md5": "d565bb4d4ec2da5791779779573ed452",
+          "path": "assets\\materials\\polyhaven\\factory_wall\\factory_wall_diff_1k.jpg",
+          "size": 308894,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/factory_wall/factory_wall_diff_1k.jpg"
+        },
+        "normal": {
+          "md5": "b4dc2be92339828c5b3fe460b9144a8a",
+          "path": "assets\\materials\\polyhaven\\factory_wall\\factory_wall_nor_gl_1k.jpg",
+          "size": 239999,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/factory_wall/factory_wall_nor_gl_1k.jpg"
+        },
+        "roughness": {
+          "md5": "a8aeacb1f76e509dc968c6b4305a5611",
+          "path": "assets\\materials\\polyhaven\\factory_wall\\factory_wall_rough_1k.jpg",
+          "size": 109634,
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/factory_wall/factory_wall_rough_1k.jpg"
+        }
+      },
+      "resolution": "1k",
+      "source": "polyhaven",
+      "source_url": "https://polyhaven.com/a/factory_wall"
+    }
+  ],
+  "source": "polyhaven"
+}

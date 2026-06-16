@@ -1,0 +1,81 @@
+seed: 7
+paper_faithful:
+  enabled: true
+  allow_substitutes: false
+  require_cuda: true
+  min_free_disk_gb: 10
+scene:
+  bounds: [8.0, 7.0, 3.2]
+  units: meters
+openai:
+  model: gpt-4o-mini
+  vision_model: gpt-4o
+  image_model: gpt-image-1
+  max_retries: 5
+image_guidance:
+  enabled: true
+  image_size: 1024x1024
+  image_quality: low
+segmentation:
+  provider: grounded_sam
+  device: cuda
+  grounding_dino_config: models/repos/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py
+  grounding_dino_checkpoint: models/checkpoints/groundingdino_swint_ogc.pth
+  sam_model_type: vit_h
+  sam_checkpoint: models/checkpoints/sam_vit_h_4b8939.pth
+  box_threshold: 0.30
+  text_threshold: 0.25
+depth:
+  provider: depth_pro
+  device: cuda
+  repo_dir: models/repos/ml-depth-pro
+  checkpoint_dir: models/repos/ml-depth-pro/checkpoints
+pose_extraction:
+  max_points_per_object: 5000
+  min_mask_pixels: 128
+asset_retrieval:
+  provider: clip_local_index
+  device: cuda
+  index_path: assets/indexes/warehouse_clip_index.npz
+  min_score: 0.18
+  text_weight: 0.20
+  metadata_weight: 0.35
+correspondence:
+  enabled: true
+  provider: roma
+  device: cuda
+  model: roma_outdoor
+  weights_path: models/checkpoints/roma_outdoor.pth
+  dinov2_weights_path: models/checkpoints/dinov2_vitl14_pretrain.pth
+  confidence_threshold: 0.6
+  max_correspondences: 100
+  min_correspondences: 12
+  max_yaw_delta_deg: 12
+physics:
+  provider: sdf_pytorch3d
+  device: cuda
+  surface_samples: 400
+  optimizer: sgd
+  max_iters: 120
+  learning_rate: 0.03
+repair:
+  rounds: 2
+render:
+  resolution: [1200, 900]
+  camera: three_quarter
+  blender_path_env: BLENDER_PATH
+  environment:
+    floor_material:
+      diffuse: assets/materials/polyhaven/concrete_floor_worn_001/concrete_floor_worn_001_diff_1k.jpg
+      normal: assets/materials/polyhaven/concrete_floor_worn_001/concrete_floor_worn_001_nor_gl_1k.jpg
+      roughness: assets/materials/polyhaven/concrete_floor_worn_001/concrete_floor_worn_001_rough_1k.jpg
+    wall_material:
+      diffuse: assets/materials/polyhaven/factory_wall/factory_wall_diff_1k.jpg
+      normal: assets/materials/polyhaven/factory_wall/factory_wall_nor_gl_1k.jpg
+      roughness: assets/materials/polyhaven/factory_wall/factory_wall_rough_1k.jpg
+paths:
+  asset_registry: configs/warehouse_asset_registry.yaml
+  planner_prompt: configs/prompts/planner_system.txt
+  judge_prompt: configs/prompts/judge_system.txt
+  checkpoints_dir: models/checkpoints
+  repos_dir: models/repos
