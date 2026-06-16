@@ -521,6 +521,100 @@ def fit_presentation_camera(camera, objects: list, resolution: list[int]) -> Non
     camera.data.ortho_scale = max(height, width / aspect, 2.8) * 1.10
 
 
+def camera_projection_metrics(camera, objects: list, resolution: list[int]) -> dict:
+    min_corner, max_corner = world_bbox(objects)
+    projected = [camera.matrix_world.inverted() @ point for point in bbox_corners(min_corner, max_corner)]
+    min_x = min(point.x for point in projected)
+    max_x = max(point.x for point in projected)
+    min_y = min(point.y for point in projected)
+    max_y = max(point.y for point in projected)
+    frame_height = float(camera.data.ortho_scale)
+    frame_width = frame_height * (float(resolution[0]) / float(resolution[1]))
+    width = max_x - min_x
+    height = max_y - min_y
+    overflow_x = max(0.0, width - frame_width) / max(frame_width, 1e-6)
+    overflow_y = max(0.0, height - frame_height) / max(frame_height, 1e-6)
+    fill = min(1.0, max(0.0, (width * height) / max(frame_width * frame_height, 1e-6)))
+    side_margin = min(
+        (min_x + frame_width * 0.5) / max(frame_width, 1e-6),
+        (frame_width * 0.5 - max_x) / max(frame_width, 1e-6),
+    )
+    vertical_margin = min(
+        (min_y + frame_height * 0.5) / max(frame_height, 1e-6),
+        (frame_height * 0.5 - max_y) / max(frame_height, 1e-6),
+    )
+    return {
+        "fill": round(float(fill), 6),
+        "overflow": round(float(overflow_x + overflow_y), 6),
+        "side_margin": round(float(side_margin), 6),
+        "vertical_margin": round(float(vertical_margin), 6),
+        "frame_width": round(float(frame_width), 6),
+        "frame_height": round(float(frame_height), 6),
+        "projected_width": round(float(width), 6),
+        "projected_height": round(float(height), 6),
+    }
+
+
+def select_presentation_camera(camera, objects: list, resolution: list[int], out_dir: Path) -> None:
+    candidates = [
+        {"name": "front_context", "direction": (0.10, -1.0, 0.48), "margin": 1.16, "presentation_bias": 0.62},
+        {"name": "front_low", "direction": (0.10, -1.0, 0.34), "margin": 1.10, "presentation_bias": 0.18},
+        {"name": "front_right", "direction": (0.58, -1.0, 0.42), "margin": 1.14, "presentation_bias": -0.20},
+        {"name": "front_left", "direction": (-0.58, -1.0, 0.42), "margin": 1.14, "presentation_bias": -0.20},
+        {"name": "right_aisle", "direction": (1.0, -0.35, 0.46), "margin": 1.12, "presentation_bias": -0.08},
+        {"name": "left_aisle", "direction": (-1.0, -0.35, 0.46), "margin": 1.12, "presentation_bias": -0.08},
+        {"name": "top_oblique", "direction": (0.18, -0.30, 0.95), "margin": 1.12, "presentation_bias": -0.24},
+    ]
+    scored = []
+    best = None
+    for candidate in candidates:
+        fit_camera_from_direction(camera, objects, resolution, candidate["direction"], margin=candidate["margin"])
+        metrics = camera_projection_metrics(camera, objects, resolution)
+        fill = float(metrics["fill"])
+        overflow = float(metrics["overflow"])
+        edge_margin = min(float(metrics["side_margin"]), float(metrics["vertical_margin"]))
+        direction_z = Vector(candidate["direction"]).normalized().z
+        target_fill = 0.64
+        fill_score = max(0.0, 1.0 - abs(fill - target_fill) / target_fill)
+        margin_score = min(edge_margin / 0.065, 1.0)
+        topdown_penalty = max(0.0, direction_z - 0.72)
+        tight_edge_penalty = max(0.0, 0.045 - edge_margin)
+        presentation_bias = float(candidate.get("presentation_bias", 0.0))
+        score = (
+            fill_score * 1.15
+            + margin_score * 0.55
+            + presentation_bias
+            - overflow * 8.0
+            - topdown_penalty * 0.4
+            - tight_edge_penalty * 5.0
+        )
+        record = {
+            "name": candidate["name"],
+            "direction": [round(float(value), 6) for value in candidate["direction"]],
+            "margin": candidate["margin"],
+            "presentation_bias": round(float(presentation_bias), 6),
+            "score": round(float(score), 6),
+            "metrics": metrics,
+        }
+        scored.append(record)
+        if best is None or score > best["score"]:
+            best = {"score": score, "candidate": candidate, "record": record}
+    assert best is not None
+    fit_camera_from_direction(camera, objects, resolution, best["candidate"]["direction"], margin=best["candidate"]["margin"])
+    (out_dir / "camera_selection.json").write_text(
+        json.dumps(
+            {
+                "selected": best["record"]["name"],
+                "selected_score": best["record"]["score"],
+                "candidates": scored,
+            },
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
+
 def configure_rendering() -> None:
     scene = bpy.context.scene
     try:
@@ -862,8 +956,9 @@ def validate_render_support(scene: dict, object_groups: dict, out_dir: Path, tol
 
 def main() -> None:
     args = parse_args()
-    data = json.loads(Path(args.input).read_text(encoding="utf-8"))
-    out_dir = Path(args.out)
+    input_path = Path(args.input).resolve()
+    data = json.loads(input_path.read_text(encoding="utf-8"))
+    out_dir = Path(args.out).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     scene = data["scene"]
     assets = data["assets"]
@@ -903,7 +998,7 @@ def main() -> None:
 
     bpy.ops.object.camera_add(location=(width, -depth, _height))
     camera = bpy.context.object
-    fit_presentation_camera(camera, presentation_camera_meshes(renderable_scene_meshes()), resolution)
+    select_presentation_camera(camera, presentation_camera_meshes(renderable_scene_meshes()), resolution, out_dir)
     bpy.context.scene.camera = camera
 
     configure_rendering()
