@@ -28,6 +28,7 @@ from scenethesis_mvp.utils.io import read_json, read_yaml, write_json, write_tex
 from scenethesis_mvp.utils.paths import project_root, resolve_path
 from scenethesis_mvp.utils.seeds import seed_everything
 from scenethesis_mvp.vision.depth_pro_runner import DepthProConfig, DepthProRunner
+from scenethesis_mvp.vision.depth_pose_refinement import apply_depth_pose_refinement
 from scenethesis_mvp.vision.grounded_sam import GroundedSAMConfig, GroundedSAMSegmenter
 from scenethesis_mvp.vision.image_guidance import ImageGuidanceGenerator, ImageGuidanceResult
 from scenethesis_mvp.vision.pointcloud import build_pointcloud_scene_graph
@@ -78,6 +79,7 @@ def run_faithful_pipeline(
         segmentation_cfg = config.get("segmentation", {})
         depth_cfg = config.get("depth", {})
         pose_cfg = config.get("pose_extraction", {})
+        depth_pose_cfg = config.get("depth_pose_refinement", {})
         retrieval_cfg = config.get("asset_retrieval", {})
         physics_cfg = config.get("physics", {})
         correspondence_cfg = config.get("correspondence", {})
@@ -156,6 +158,14 @@ def run_faithful_pipeline(
             )
         ).retrieve(scene, segmentation, registry, target_dir)
         scene = stage_warehouse_presentation_layout(scene, registry)
+        stage = "depth_pose_refinement"
+        scene, _depth_pose_report = apply_depth_pose_refinement(
+            scene,
+            graph,
+            registry,
+            target_dir,
+            depth_pose_cfg,
+        )
         write_json(target_dir / "presentation_layout.json", scene)
         scene_runtime_report = validate_faithful_runtime(config, root, registry=registry, scene=scene, check_disk=False)
         write_json(target_dir / "faithful_scene_runtime_report.json", scene_runtime_report)
@@ -221,6 +231,16 @@ def run_faithful_pipeline(
             scene = normalize_support_relation_semantics(scene, registry)
             apply_faithful_repair_placements(scene, registry, actions)
             scene = stage_warehouse_presentation_layout(scene, registry)
+            stage = f"repair_{round_index + 1}_depth_pose_refinement"
+            scene, depth_pose_report = apply_depth_pose_refinement(
+                scene,
+                graph,
+                registry,
+                target_dir,
+                depth_pose_cfg,
+                artifact_name=f"repair_{round_index + 1}_depth_pose_refinement.json",
+            )
+            repair_record["depth_pose_refinement"] = depth_pose_report
             stage = f"repair_{round_index + 1}_sdf_optimization"
             scene = run_sdf_optimizer(scene, graph, registry, target_dir, physics_cfg)
             stage = f"repair_{round_index + 1}_render"
@@ -452,6 +472,7 @@ def build_faithful_report(
     render_validation = read_json(out_dir / "render_validation.json") if (out_dir / "render_validation.json").exists() else {}
     qualification = read_json(out_dir / "qualification.json") if (out_dir / "qualification.json").exists() else {}
     correspondence = read_json(out_dir / "correspondence_diagnostics.json") if (out_dir / "correspondence_diagnostics.json").exists() else {}
+    depth_pose = read_json(out_dir / "depth_pose_refinement.json") if (out_dir / "depth_pose_refinement.json").exists() else {}
     lines = [
         "# Scenethesis Faithful Pipeline Report",
         "",
@@ -508,6 +529,12 @@ def build_faithful_report(
             "",
             f"- Accepted: {qualification.get('accepted', 'pending')}",
             f"- Stage: {qualification.get('stage', 'pending')}",
+            "",
+            "## Depth Pose Refinement",
+            "",
+            f"- Status: {'ok' if depth_pose.get('ok', False) else 'missing/failed'}",
+            f"- Scale updates: {depth_pose.get('applied_scale_updates', 'unknown')}",
+            f"- Yaw updates: {depth_pose.get('applied_yaw_updates', 'unknown')}",
             "",
             "## RoMa Correspondence",
             "",

@@ -55,41 +55,79 @@ class RoMaCorrespondenceRefiner:
         objects = {obj.id: obj for obj in updated.objects}
         detections = {item.object_id: item for item in segmentation.detections if item.object_id}
         records: list[dict[str, Any]] = []
+        history: list[dict[str, Any]] = []
         applied_updates = 0
+        applied_yaw_updates = 0
         failed = 0
+        correspondence_dir = out_path / "correspondences"
+        correspondence_dir.mkdir(parents=True, exist_ok=True)
 
         for obj in updated.objects:
             detection = detections.get(obj.id)
             view_path = Path(object_views.get(obj.id, ""))
+            before = objects[obj.id].placement.model_dump(mode="json")
             if detection is None or not detection.crop_path:
                 records.append({"object_id": obj.id, "status": "missing_guidance_crop"})
+                history.append({"object_id": obj.id, "status": "missing_guidance_crop", "before": before, "after": before})
                 failed += 1
                 continue
             crop_path = Path(detection.crop_path)
             if not crop_path.is_file():
                 records.append({"object_id": obj.id, "status": "missing_guidance_crop", "path": str(crop_path)})
+                history.append({"object_id": obj.id, "status": "missing_guidance_crop", "before": before, "after": before})
                 failed += 1
                 continue
             if not view_path.is_file():
                 records.append({"object_id": obj.id, "status": "missing_rendered_object_view", "path": str(view_path)})
+                history.append({"object_id": obj.id, "status": "missing_rendered_object_view", "before": before, "after": before})
                 failed += 1
                 continue
             if not obj.asset_id:
                 records.append({"object_id": obj.id, "status": "missing_asset_id"})
+                history.append({"object_id": obj.id, "status": "missing_asset_id", "before": before, "after": before})
                 failed += 1
                 continue
             _ = registry.get(obj.asset_id)
-            record = self._match_object(model, obj.id, crop_path, view_path)
+            record = self._match_object(model, obj.id, crop_path, view_path, correspondence_dir)
             if record["status"] == "ok" and record.get("yaw_delta_deg") is not None:
                 delta = float(record["yaw_delta_deg"])
                 if abs(delta) > 0:
                     objects[obj.id].placement.yaw_deg = (objects[obj.id].placement.yaw_deg + delta) % 360.0
                     applied_updates += 1
+                    applied_yaw_updates += 1
                     record["applied_yaw_delta_deg"] = round(delta, 4)
             if record["status"] != "ok":
                 failed += 1
+            history.append(
+                {
+                    "object_id": obj.id,
+                    "status": record["status"],
+                    "before": before,
+                    "update": {
+                        "yaw_delta_deg": record.get("applied_yaw_delta_deg", 0.0),
+                        "scale_delta": 0.0,
+                        "scale_update_status": "not_applied_object_alignment_views_are_scale_normalized",
+                    },
+                    "after": objects[obj.id].placement.model_dump(mode="json"),
+                    "correspondence_path": record.get("correspondence_path"),
+                }
+            )
             records.append(record)
 
+        history_path = out_path / "pose_alignment_history.json"
+        write_json(
+            history_path,
+            {
+                "provider": "roma",
+                "model": self.config.model,
+                "source": "guidance object crops matched against rendered object alignment views",
+                "note": (
+                    "Object alignment views are orthographically re-centered per object, so RoMa updates yaw only here. "
+                    "Metric scale is refined separately from Depth Pro scene_graph_3d bounding boxes."
+                ),
+                "objects": history,
+            },
+        )
         report = {
             "ok": failed == 0,
             "provider": "roma",
@@ -98,7 +136,11 @@ class RoMaCorrespondenceRefiner:
             "min_correspondences": self.config.min_correspondences,
             "max_correspondences": self.config.max_correspondences,
             "applied_updates": applied_updates,
+            "applied_yaw_updates": applied_yaw_updates,
+            "applied_scale_updates": 0,
             "failed_object_count": failed,
+            "correspondence_dir": str(correspondence_dir),
+            "pose_alignment_history_path": str(history_path),
             "objects": records,
         }
         write_json(out_path / "correspondence_diagnostics.json", report)
@@ -127,7 +169,7 @@ class RoMaCorrespondenceRefiner:
         model.eval()
         return model
 
-    def _match_object(self, model: Any, object_id: str, crop_path: Path, rendered_path: Path) -> dict[str, Any]:
+    def _match_object(self, model: Any, object_id: str, crop_path: Path, rendered_path: Path, correspondence_dir: Path) -> dict[str, Any]:
         try:
             import torch
             import cv2
@@ -161,22 +203,36 @@ class RoMaCorrespondenceRefiner:
             )
             points_a = kpts_a.detach().cpu().numpy().astype("float32")
             points_b = kpts_b.detach().cpu().numpy().astype("float32")
+            confidence = sampled_certainty.detach().cpu().numpy().astype("float32")
+            correspondence_path = correspondence_dir / f"{object_id}.npz"
+            np.savez_compressed(
+                correspondence_path,
+                guidance_xy=points_a,
+                rendered_xy=points_b,
+                confidence=confidence,
+            )
             affine, inliers = cv2.estimateAffinePartial2D(points_b, points_a, method=cv2.RANSAC, ransacReprojThreshold=5.0)
             yaw_delta = 0.0
             inlier_count = int(inliers.sum()) if inliers is not None else 0
+            affine_scale = None
             if affine is not None and inlier_count >= self.config.min_correspondences:
                 raw_angle = float(np.degrees(np.arctan2(affine[1, 0], affine[0, 0])))
                 yaw_delta = float(np.clip(raw_angle, -self.config.max_yaw_delta_deg, self.config.max_yaw_delta_deg))
-            return {
+                affine_scale = float(np.sqrt(max(0.0, np.linalg.det(affine[:, :2]))))
+            record = {
                 "object_id": object_id,
                 "status": "ok",
                 "match_count": int(len(sampled_matches)),
                 "inlier_count": inlier_count,
                 "mean_confidence": float(sampled_certainty.mean().item()),
                 "yaw_delta_deg": round(yaw_delta, 4),
+                "affine_scale_render_to_guidance": round(float(affine_scale), 6) if affine_scale is not None else None,
                 "guidance_crop": str(crop_path),
                 "rendered_object_view": str(rendered_path),
+                "correspondence_path": str(correspondence_path),
             }
+            write_json(correspondence_dir / f"{object_id}.json", record)
+            return record
         finally:
             if self.config.device == "cuda" and torch.cuda.is_available():
                 torch.cuda.empty_cache()

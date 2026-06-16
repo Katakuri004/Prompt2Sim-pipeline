@@ -26,6 +26,7 @@ def build_pipeline_diagnostics(
     sdf = read_json(target / "sdf_optimizer.json") if (target / "sdf_optimizer.json").is_file() else {}
     render_validation = read_json(target / "render_validation.json") if (target / "render_validation.json").is_file() else {}
     correspondence = read_json(target / "correspondence_diagnostics.json") if (target / "correspondence_diagnostics.json").is_file() else {}
+    depth_pose = read_json(target / "depth_pose_refinement.json") if (target / "depth_pose_refinement.json").is_file() else {}
 
     segmentation_ids = {
         detection.object_id
@@ -48,6 +49,14 @@ def build_pipeline_diagnostics(
             "scene_graph_coverage",
             graph is not None and object_ids.issubset(graph_ids) and not graph.missing_object_ids,
             f"pointclouds={len(graph_ids)}, missing={sorted(object_ids - graph_ids)}",
+        ),
+        _check(
+            "depth_pose_refinement",
+            bool(depth_pose.get("ok", False)),
+            (
+                f"scale_updates={depth_pose.get('applied_scale_updates', 'missing')}, "
+                f"yaw_updates={depth_pose.get('applied_yaw_updates', 'missing')}"
+            ),
         ),
         _check("sdf_status", sdf.get("status") == "ok" and not sdf_failed, f"status={sdf.get('status')}, failed={sdf_failed}"),
         _check(
@@ -81,6 +90,8 @@ def build_pipeline_diagnostics(
             "anchor_ids": anchors,
             "segmentation_detection_count": len(segmentation_ids),
             "scene_graph_pointcloud_count": len(graph_ids),
+            "depth_pose_scale_updates": depth_pose.get("applied_scale_updates"),
+            "depth_pose_yaw_updates": depth_pose.get("applied_yaw_updates"),
             "sdf_object_count": len(sdf_objects),
             "collision_count": metrics.collision_count,
             "floating_count": metrics.floating_count,

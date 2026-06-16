@@ -15,6 +15,8 @@ from scenethesis_mvp.runtime.faithful import validate_faithful_runtime
 from scenethesis_mvp.schemas.depth import CameraIntrinsics, DepthResult
 from scenethesis_mvp.schemas.scene_spec import ObjectSpec, PlacementSpec, SceneSpec
 from scenethesis_mvp.schemas.segmentation import DetectionSpec, SegmentationResult
+from scenethesis_mvp.schemas.scene_graph_3d import Object3DBoundingBox, ObjectPointCloudSpec, SceneGraph3D
+from scenethesis_mvp.vision.depth_pose_refinement import apply_depth_pose_refinement
 from scenethesis_mvp.vision.grounded_sam import GroundedSAMConfig, GroundedSAMSegmenter
 from scenethesis_mvp.vision.image_guidance import ImageGuidanceResult
 from scenethesis_mvp.vision.pointcloud import build_pointcloud_scene_graph
@@ -128,6 +130,62 @@ def test_mask_depth_projection_writes_pointcloud_graph(tmp_path: Path) -> None:
     graph = build_pointcloud_scene_graph(segmentation, depth, tmp_path, min_mask_pixels=4)
     assert graph.poses[0].object_id == "box"
     assert Path(graph.pointclouds[0].points_path).is_file()
+
+
+def test_depth_pose_refinement_applies_bounded_scale_and_yaw(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    registry = AssetRegistry.from_yaml(root / "configs" / "asset_registry.yaml")
+    scene = SceneSpec(
+        prompt="box",
+        objects=[
+            ObjectSpec(
+                id="box",
+                category="box",
+                asset_id="proc_box_01",
+                role="anchor",
+                placement=PlacementSpec(scale=1.0, yaw_deg=0.0, z=0.14),
+            )
+        ],
+    )
+    graph = SceneGraph3D(
+        pointclouds=[
+            ObjectPointCloudSpec(
+                object_id="box",
+                phrase="box",
+                points_path=str(tmp_path / "box.ply"),
+                point_count=256,
+                bbox=Object3DBoundingBox(center=[0, 0, 1], size=[0.76, 0.56, 0.20], yaw_deg=45.0),
+            )
+        ],
+    )
+
+    refined, report = apply_depth_pose_refinement(
+        scene,
+        graph,
+        registry,
+        tmp_path,
+        {"max_scale": 2.5, "max_scale_delta_fraction": 0.20, "max_yaw_delta_deg": 12.0},
+    )
+
+    box = refined.object_by_id("box")
+    assert box.placement.scale == pytest.approx(1.2)
+    assert box.placement.yaw_deg == pytest.approx(12.0)
+    assert box.placement.z == pytest.approx(registry.get("proc_box_01").dimensions[2] * box.placement.scale * 0.5)
+    assert report["applied_scale_updates"] == 1
+    assert report["applied_yaw_updates"] == 1
+    assert (tmp_path / "depth_pose_refinement.json").is_file()
+
+
+def test_depth_pose_refinement_requires_graph_coverage(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    registry = AssetRegistry.from_yaml(root / "configs" / "asset_registry.yaml")
+    scene = SceneSpec(
+        prompt="box",
+        objects=[ObjectSpec(id="box", category="box", asset_id="proc_box_01", role="anchor")],
+    )
+
+    with pytest.raises(RuntimeError, match="missing graph point clouds"):
+        apply_depth_pose_refinement(scene, SceneGraph3D(pointclouds=[]), registry, tmp_path)
 
 
 def test_clip_retriever_fails_when_index_missing(tmp_path: Path) -> None:

@@ -396,3 +396,37 @@ Remaining issues:
 - Composition still needs work: foreground objects are dense, the forklift is partially cropped, and some right-side props are clipped.
 - The rack asset itself has two usable shelf boards after Blender import, not the three shelf levels implied by registry metadata. Better warehouse renders need either a different rack mesh with more real support levels or a cleaned rack asset without baked-in small boxes.
 - A valid OpenAI API key is required to complete the final judge and produce an accepted run.
+
+## 2026-06-17 Addendum: Depth-Pose And RoMa Artifact Integration
+
+Implemented in this pass:
+
+- Added `src/scenethesis_mvp/vision/depth_pose_refinement.py`.
+  - Uses `scene_graph_3d.json` point-cloud bounding boxes from Grounded-SAM masks plus Depth Pro.
+  - Applies bounded metric scale updates only when height and footprint scale estimates agree.
+  - Applies bounded yaw updates only when the depth box is directionally meaningful.
+  - Snaps objects back to valid support after pose changes.
+  - Writes `depth_pose_refinement.json` with per-object before/update/after records.
+- Wired depth-pose refinement into `scripts/run_faithful.py` through `run_faithful_pipeline`.
+  - The stage runs after asset retrieval and warehouse presentation staging, before SDF/PyTorch3D.
+  - Repair rounds rerun the same depth-pose stage before SDF.
+- Tightened qualification and diagnostics.
+  - `pipeline_diagnostics.json` now includes a `depth_pose_refinement` check.
+  - `qualification.json` now requires `depth_pose_refinement.json` for accepted faithful runs.
+  - `report.md` now separates Depth Pose Refinement from RoMa Correspondence.
+- Improved RoMa diagnostics.
+  - RoMa now writes `correspondences/<object_id>.npz` with guidance/rendered keypoints and confidence.
+  - RoMa writes per-object JSON summaries under `correspondences/`.
+  - RoMa writes `pose_alignment_history.json` with before/update/after placement records.
+  - Scale is intentionally not inferred from RoMa object alignment views because those views are orthographically recentered and scale-normalized per object. Metric scale now comes from Depth Pro point-cloud boxes instead.
+
+Smoke verification:
+
+- Runtime gate passes with CUDA, PyTorch3D, Grounded-SAM, SAM, Depth Pro, RoMa, CLIP index, Blender, and checkpoints.
+- Depth-pose smoke on `runs/warehouse_gpt55_full_001` produced `runs/depth_pose_smoke_003/depth_pose_refinement.json`.
+- The conservative default applied 4 scale updates and 23 yaw updates on that 33-object scene.
+- Full test suite passes: `46 passed`.
+
+Remaining gap:
+
+- The pose loop is closer to the paper than before because metric depth now affects scale/yaw before SDF and RoMa writes real correspondence artifacts. It is still not the full Scenethesis joint optimization objective: the next step is to combine rendered scene projection, RoMa correspondences, and Depth Pro point clouds into a single iterative 5-DoF loss for translation, yaw, and scale instead of running bounded refinement stages around SDF.

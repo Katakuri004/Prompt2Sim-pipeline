@@ -47,9 +47,11 @@ def test_pipeline_diagnostics_reports_stage_coverage(tmp_path: Path) -> None:
     write_json(tmp_path / "sdf_optimizer.json", {"status": "ok", "objects": [{"object_id": "shelf_01", "status": "ok"}, {"object_id": "box_01", "status": "ok"}]})
     write_json(tmp_path / "render_validation.json", {"ok": True, "visual_support_failure_count": 0})
     write_json(tmp_path / "correspondence_diagnostics.json", {"ok": True, "failed_object_count": 0})
+    write_json(tmp_path / "depth_pose_refinement.json", {"ok": True, "applied_scale_updates": 1, "applied_yaw_updates": 1})
 
     diagnostics = build_pipeline_diagnostics(scene, Metrics(object_count=2), {"needs_repair": False}, tmp_path)
 
     assert diagnostics["ok"] is True
     assert diagnostics["summary"]["segmentation_detection_count"] == 2
     assert diagnostics["summary"]["scene_graph_pointcloud_count"] == 2
+    assert diagnostics["summary"]["depth_pose_scale_updates"] == 1

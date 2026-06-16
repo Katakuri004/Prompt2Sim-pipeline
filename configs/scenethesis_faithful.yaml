@@ -33,6 +33,17 @@ depth:
 pose_extraction:
   max_points_per_object: 5000
   min_mask_pixels: 128
+depth_pose_refinement:
+  enabled: true
+  apply_scale: true
+  apply_yaw: true
+  min_extent_m: 0.025
+  min_yaw_anisotropy: 1.25
+  max_scale_delta_fraction: 0.12
+  min_scale: 0.20
+  max_scale: 1.60
+  max_scale_estimate_ratio: 1.65
+  max_yaw_delta_deg: 18
 asset_retrieval:
   provider: clip_local_index
   device: cuda

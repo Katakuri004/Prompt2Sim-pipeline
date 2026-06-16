@@ -23,11 +23,12 @@ The strict path implements the current local approximation of the paper architec
 4. Depth Pro estimates dense depth.
 5. Mask/depth projection builds per-object point clouds and a 3D scene graph.
 6. Local CLIP retrieval selects mesh-backed assets from the warehouse registry.
-7. SDF/PyTorch3D optimization adjusts 5-DoF poses and checks support/collision.
-8. Blender renders `render.png`, alternate scene views, per-object alignment views, `scene.glb`, and `scene.usd` when Blender supports USD.
-9. RoMa matches guidance crops against rendered object views, writes correspondence diagnostics, and applies bounded yaw refinements before a second SDF/render pass when needed.
-10. OpenAI vision judge scores the rendered scene with guidance plus multi-view render inputs and returns strict JSON repair actions.
-11. The repair loop applies only actionable scene changes, reruns optimization/render/judge, and writes final artifacts plus `qualification.json`.
+7. Depth-derived 3D boxes apply conservative metric scale/yaw pose refinement before SDF optimization.
+8. SDF/PyTorch3D optimization adjusts 5-DoF poses and checks support/collision.
+9. Blender renders `render.png`, alternate scene views, per-object alignment views, `scene.glb`, and `scene.usd` when Blender supports USD.
+10. RoMa matches guidance crops against rendered object views, writes per-object correspondence files plus pose history, and applies bounded yaw refinements before a second SDF/render pass when needed.
+11. OpenAI vision judge scores the rendered scene with guidance plus multi-view render inputs and returns strict JSON repair actions.
+12. The repair loop applies only actionable scene changes, reruns optimization/render/judge, and writes final artifacts plus `qualification.json`.
 
 The paper describes coarse LLM planning, image-guided scene graph extraction, asset retrieval, pose optimization with semantic correspondence and SDF-based physical constraints, and GPT-4o scene judgment. This repo now follows that structure, but remains smaller than the paper system: the asset database is a curated local warehouse pack, not a large Objaverse-scale subset.
 
@@ -92,6 +93,7 @@ Expected final artifacts:
 - `depth.json`
 - `scene_graph_3d.json`
 - `clip_retrieval.json`
+- `depth_pose_refinement.json`
 - `sdf_optimizer.json`
 - `scene_spec.json`
 - `scene.glb`
@@ -100,6 +102,8 @@ Expected final artifacts:
 - `views/render_front.png`, `views/render_left.png`, `views/render_right.png`, `views/render_top_oblique.png`
 - `alignment_views/<object_id>.png`
 - `render_views.json`
+- `correspondences/<object_id>.npz`
+- `pose_alignment_history.json`
 - `correspondence_diagnostics.json`
 - `metrics.json`
 - `judge.json`
@@ -141,7 +145,7 @@ Current strict behavior:
 - Invalid judge JSON fails.
 - No-op judge repair actions fail validation when `needs_repair=true`.
 - Missing `qualification.json` prevents a run from being accepted by `validate_run`.
-- Failed visual support, judge repair, or RoMa correspondence diagnostics mark the run unqualified even if render artifacts exist.
+- Failed depth-pose refinement, visual support, judge repair, or RoMa correspondence diagnostics mark the run unqualified even if render artifacts exist.
 - PyBullet is not used as a support-contact substitute. The PyBullet hook raises until a real simulation integration is implemented.
 
 The renderer may assign a default material only when an imported mesh has no material slots. That is not a geometry or asset substitute.
@@ -160,9 +164,10 @@ Still not reproduced from the paper:
 
 - No large Objaverse-scale asset database.
 - No exact paper asset subset.
+- Depth pose refinement uses Depth Pro point-cloud boxes for conservative metric scale/yaw updates, but does not yet solve the full paper 2D/3D joint objective.
 - RoMa is integrated as a rendered-object correspondence refinement and qualification gate, but it is still simpler than the paper's full optimization objective.
 - The SDF optimizer is local and practical for the laptop, but the paper ran experiments on A100-class hardware.
 - Warehouse asset quality depends on the current curated Poly Haven plus HF SimReady subset.
 - Multi-view judge/regeneration is implemented, but still smaller than the paper evaluation loop.
 
-The next high-impact work is broader licensed asset acquisition, better object-aware composition policies, and a stronger correspondence loss inside the pose optimizer instead of the current bounded yaw refinement.
+The next high-impact work is broader licensed asset acquisition, better object-aware composition policies, and a stronger correspondence loss inside the pose optimizer instead of the current bounded depth/RoMa pose refinements.

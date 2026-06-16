@@ -19,7 +19,16 @@ def build_success_qualification(
     target = Path(out_dir)
     render_validation = read_json(target / "render_validation.json") if (target / "render_validation.json").exists() else {}
     correspondence = read_json(target / "correspondence_diagnostics.json") if (target / "correspondence_diagnostics.json").exists() else {}
-    required_files = ["scene_spec.json", "scene.glb", "render.png", "metrics.json", "judge.json", "pipeline_diagnostics.json"]
+    depth_pose = read_json(target / "depth_pose_refinement.json") if (target / "depth_pose_refinement.json").exists() else {}
+    required_files = [
+        "scene_spec.json",
+        "scene.glb",
+        "render.png",
+        "metrics.json",
+        "judge.json",
+        "pipeline_diagnostics.json",
+        "depth_pose_refinement.json",
+    ]
     checks = [
         QualificationCheck(
             name="required_outputs",
@@ -45,6 +54,14 @@ def build_success_qualification(
             name="render_visual_support",
             ok=bool(render_validation.get("ok", False)),
             detail=f"visual_support_failure_count={render_validation.get('visual_support_failure_count', 'missing')}",
+        ),
+        QualificationCheck(
+            name="depth_pose_refinement",
+            ok=bool(depth_pose.get("ok", False)),
+            detail=(
+                f"scale_updates={depth_pose.get('applied_scale_updates', 'missing')}, "
+                f"yaw_updates={depth_pose.get('applied_yaw_updates', 'missing')}"
+            ),
         ),
         QualificationCheck(
             name="judge",
