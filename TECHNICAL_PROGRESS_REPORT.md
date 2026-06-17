@@ -430,3 +430,41 @@ Smoke verification:
 Remaining gap:
 
 - The pose loop is closer to the paper than before because metric depth now affects scale/yaw before SDF and RoMa writes real correspondence artifacts. It is still not the full Scenethesis joint optimization objective: the next step is to combine rendered scene projection, RoMa correspondences, and Depth Pro point clouds into a single iterative 5-DoF loss for translation, yaw, and scale instead of running bounded refinement stages around SDF.
+
+## 2026-06-17 Addendum: Joint Pose Optimizer Branch
+
+Branch:
+
+- `feature/joint-pose-optimizer`
+
+Implemented on the branch:
+
+- Added `src/scenethesis_mvp/optimization/joint_pose_optimizer.py`.
+  - Consumes `scene_graph_3d.json` depth-derived object poses/boxes.
+  - Requires `correspondence_diagnostics.json` and `correspondences/<object_id>.npz` from the real RoMa stage.
+  - Optimizes bounded 5-DoF pose variables: `x`, `y`, `z` through support snapping, `yaw_deg`, and `scale`.
+  - Uses SGD-style updates against a combined local objective:
+    - depth-relative room position loss for movable floor objects;
+    - depth metric scale loss;
+    - depth yaw loss for directionally meaningful point-cloud boxes;
+    - RoMa yaw correspondence loss;
+    - scene-bound clamping and support snapping before SDF validation.
+  - Accepts an object update only if that object's local loss decreases.
+  - Writes `joint_pose_optimizer.json` and `pose_loss_history.json`.
+- Updated RoMa correspondence to support diagnostics-only mode.
+  - When joint optimization is enabled, RoMa writes correspondence artifacts and proposed yaw residuals.
+  - The joint optimizer applies the yaw update once, avoiding double application.
+- Wired the joint optimizer into `run_faithful_pipeline` after RoMa and before the second SDF/render pass.
+- Updated diagnostics, qualification, output validation, README, and tests.
+
+Net-positive gate for merging:
+
+- Unit/focused tests must pass.
+- Full test suite must pass.
+- Runtime gate must still pass.
+- Offline smoke must show `joint_pose_optimizer.final_loss.total_loss <= initial_loss.total_loss`.
+- If a full scene is run, SDF/render support validation must remain clean; otherwise the branch should not be merged.
+
+Remaining limitation:
+
+- This is a practical laptop-sized joint pose optimizer, not the full paper objective. SDF terms are still enforced by the following SDF/PyTorch3D stage rather than differentiated inside the joint pose loop.

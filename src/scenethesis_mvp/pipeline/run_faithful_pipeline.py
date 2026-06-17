@@ -14,6 +14,7 @@ from scenethesis_mvp.llm.judge import SceneJudge
 from scenethesis_mvp.llm.planner import ScenePlanner
 from scenethesis_mvp.llm.repair import RepairEngine
 from scenethesis_mvp.optimization.roma_correspondence import run_roma_correspondence_refinement
+from scenethesis_mvp.optimization.joint_pose_optimizer import run_joint_pose_optimizer
 from scenethesis_mvp.optimization.sdf_optimizer import SDFOptimizerConfig, SDFPhysicsOptimizer
 from scenethesis_mvp.pipeline.qualification import build_failure_qualification, build_success_qualification, write_qualification
 from scenethesis_mvp.pipeline.diagnostics import write_pipeline_diagnostics
@@ -83,6 +84,7 @@ def run_faithful_pipeline(
         retrieval_cfg = config.get("asset_retrieval", {})
         physics_cfg = config.get("physics", {})
         correspondence_cfg = config.get("correspondence", {})
+        joint_pose_cfg = config.get("joint_pose_optimizer", {})
         render_cfg = config.get("render", {})
         repair_limit = int(config.get("repair", {}).get("rounds", 2)) if repair_rounds is None else repair_rounds
 
@@ -187,15 +189,28 @@ def run_faithful_pipeline(
         )
         if correspondence_cfg.get("enabled", False):
             stage = "roma_correspondence"
+            roma_cfg = dict(correspondence_cfg)
+            if bool(joint_pose_cfg.get("enabled", False)):
+                roma_cfg["apply_updates"] = False
             scene, correspondence_report = run_roma_correspondence_refinement(
                 scene,
                 segmentation,
                 registry,
                 target_dir,
-                correspondence_cfg,
+                roma_cfg,
                 root,
             )
-            if int(correspondence_report.get("applied_updates", 0)) > 0:
+            joint_pose_report: dict[str, Any] = {"applied_updates": 0}
+            if bool(joint_pose_cfg.get("enabled", False)):
+                stage = "joint_pose_optimization"
+                scene, joint_pose_report = run_joint_pose_optimizer(
+                    scene,
+                    graph,
+                    registry,
+                    target_dir,
+                    joint_pose_cfg,
+                )
+            if int(correspondence_report.get("applied_updates", 0)) > 0 or int(joint_pose_report.get("applied_updates", 0)) > 0:
                 stage = "roma_refined_sdf_optimization"
                 scene = run_sdf_optimizer(scene, graph, registry, target_dir, physics_cfg)
                 stage = "roma_refined_render"
@@ -473,6 +488,7 @@ def build_faithful_report(
     qualification = read_json(out_dir / "qualification.json") if (out_dir / "qualification.json").exists() else {}
     correspondence = read_json(out_dir / "correspondence_diagnostics.json") if (out_dir / "correspondence_diagnostics.json").exists() else {}
     depth_pose = read_json(out_dir / "depth_pose_refinement.json") if (out_dir / "depth_pose_refinement.json").exists() else {}
+    joint_pose = read_json(out_dir / "joint_pose_optimizer.json") if (out_dir / "joint_pose_optimizer.json").exists() else {}
     lines = [
         "# Scenethesis Faithful Pipeline Report",
         "",
@@ -535,6 +551,13 @@ def build_faithful_report(
             f"- Status: {'ok' if depth_pose.get('ok', False) else 'missing/failed'}",
             f"- Scale updates: {depth_pose.get('applied_scale_updates', 'unknown')}",
             f"- Yaw updates: {depth_pose.get('applied_yaw_updates', 'unknown')}",
+            "",
+            "## Joint Pose Optimizer",
+            "",
+            f"- Status: {'ok' if joint_pose.get('ok', False) else 'missing/failed'}",
+            f"- Initial loss: {joint_pose.get('initial_loss', {}).get('total_loss', 'unknown')}",
+            f"- Final loss: {joint_pose.get('final_loss', {}).get('total_loss', 'unknown')}",
+            f"- Applied updates: {joint_pose.get('applied_updates', 'unknown')}",
             "",
             "## RoMa Correspondence",
             "",
