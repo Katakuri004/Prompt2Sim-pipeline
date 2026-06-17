@@ -37,6 +37,8 @@ def validate_run(out_dir: str | Path, min_objects: int = 6) -> dict[str, Any]:
     render_validation = read_json(render_validation_path) if render_validation_path.exists() else {"ok": True}
     correspondence_path = target / "correspondence_diagnostics.json"
     correspondence = read_json(correspondence_path) if correspondence_path.exists() else {}
+    joint_pose_path = target / "joint_pose_optimizer.json"
+    joint_pose = read_json(joint_pose_path) if joint_pose_path.exists() else {}
     result.update(
         {
             "object_count": len(scene.objects),
@@ -54,6 +56,10 @@ def validate_run(out_dir: str | Path, min_objects: int = 6) -> dict[str, Any]:
             "render_visual_support_failure_count": int(render_validation.get("visual_support_failure_count", 0)),
             "roma_correspondence_ok": bool(correspondence.get("ok", False)),
             "roma_failed_object_count": correspondence.get("failed_object_count"),
+            "joint_pose_optimizer_ok": bool(joint_pose.get("ok", False)),
+            "joint_pose_initial_loss": joint_pose.get("initial_loss", {}).get("total_loss"),
+            "joint_pose_final_loss": joint_pose.get("final_loss", {}).get("total_loss"),
+            "joint_pose_applied_updates": joint_pose.get("applied_updates"),
         }
     )
     if mesh_metrics is not None:

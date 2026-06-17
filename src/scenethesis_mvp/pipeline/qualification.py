@@ -20,6 +20,7 @@ def build_success_qualification(
     render_validation = read_json(target / "render_validation.json") if (target / "render_validation.json").exists() else {}
     correspondence = read_json(target / "correspondence_diagnostics.json") if (target / "correspondence_diagnostics.json").exists() else {}
     depth_pose = read_json(target / "depth_pose_refinement.json") if (target / "depth_pose_refinement.json").exists() else {}
+    joint_pose = read_json(target / "joint_pose_optimizer.json") if (target / "joint_pose_optimizer.json").exists() else {}
     required_files = [
         "scene_spec.json",
         "scene.glb",
@@ -28,6 +29,7 @@ def build_success_qualification(
         "judge.json",
         "pipeline_diagnostics.json",
         "depth_pose_refinement.json",
+        "joint_pose_optimizer.json",
     ]
     checks = [
         QualificationCheck(
@@ -74,6 +76,15 @@ def build_success_qualification(
             detail=(
                 f"failed_object_count={correspondence.get('failed_object_count', 'missing')}, "
                 f"applied_updates={correspondence.get('applied_updates', 'missing')}"
+            ),
+        ),
+        QualificationCheck(
+            name="joint_pose_optimizer",
+            ok=bool(joint_pose.get("ok", False)),
+            detail=(
+                f"initial_loss={joint_pose.get('initial_loss', {}).get('total_loss', 'missing')}, "
+                f"final_loss={joint_pose.get('final_loss', {}).get('total_loss', 'missing')}, "
+                f"applied_updates={joint_pose.get('applied_updates', 'missing')}"
             ),
         ),
     ]

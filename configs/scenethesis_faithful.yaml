@@ -62,6 +62,21 @@ correspondence:
   max_correspondences: 100
   min_correspondences: 12
   max_yaw_delta_deg: 12
+joint_pose_optimizer:
+  enabled: true
+  provider: depth_roma_joint
+  max_iters: 8
+  learning_rate: 0.45
+  max_translation_step_m: 0.04
+  max_scale_step_fraction: 0.05
+  max_yaw_step_deg: 5.0
+  min_yaw_anisotropy: 1.25
+  min_correspondences: 12
+  min_mean_confidence: 0.60
+  depth_position_weight: 0.35
+  depth_scale_weight: 0.85
+  depth_yaw_weight: 0.45
+  roma_yaw_weight: 0.65
 physics:
   provider: sdf_pytorch3d
   device: cuda

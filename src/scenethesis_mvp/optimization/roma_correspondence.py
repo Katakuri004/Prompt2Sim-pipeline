@@ -26,6 +26,7 @@ class RoMaCorrespondenceConfig:
     max_correspondences: int = 100
     min_correspondences: int = 12
     max_yaw_delta_deg: float = 12.0
+    apply_updates: bool = True
 
 
 class RoMaCorrespondenceRefiner:
@@ -91,11 +92,13 @@ class RoMaCorrespondenceRefiner:
             record = self._match_object(model, obj.id, crop_path, view_path, correspondence_dir)
             if record["status"] == "ok" and record.get("yaw_delta_deg") is not None:
                 delta = float(record["yaw_delta_deg"])
-                if abs(delta) > 0:
+                if self.config.apply_updates and abs(delta) > 0:
                     objects[obj.id].placement.yaw_deg = (objects[obj.id].placement.yaw_deg + delta) % 360.0
                     applied_updates += 1
                     applied_yaw_updates += 1
                     record["applied_yaw_delta_deg"] = round(delta, 4)
+                elif not self.config.apply_updates:
+                    record["proposed_yaw_delta_deg"] = round(delta, 4)
             if record["status"] != "ok":
                 failed += 1
             history.append(
@@ -135,6 +138,7 @@ class RoMaCorrespondenceRefiner:
             "confidence_threshold": self.config.confidence_threshold,
             "min_correspondences": self.config.min_correspondences,
             "max_correspondences": self.config.max_correspondences,
+            "apply_updates": self.config.apply_updates,
             "applied_updates": applied_updates,
             "applied_yaw_updates": applied_yaw_updates,
             "applied_scale_updates": 0,
@@ -257,6 +261,7 @@ def run_roma_correspondence_refinement(
         max_correspondences=int(cfg.get("max_correspondences", 100)),
         min_correspondences=int(cfg.get("min_correspondences", 12)),
         max_yaw_delta_deg=float(cfg.get("max_yaw_delta_deg", 12)),
+        apply_updates=bool(cfg.get("apply_updates", True)),
     )
     if not config.enabled:
         raise RuntimeError("RoMa correspondence refinement is disabled in faithful config.")
