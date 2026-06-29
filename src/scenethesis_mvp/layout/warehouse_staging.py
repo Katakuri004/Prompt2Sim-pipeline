@@ -87,13 +87,13 @@ def stage_warehouse_presentation_layout(scene: SceneSpec, registry: AssetRegistr
     for forklift in by_category.get("forklift", []):
         _set_scale_if_footprint_large(forklift, registry, max_size=1.55)
     _place_sequence(by_category.get("forklift", []), registry, width, depth, [(width * 0.18, depth * 0.52, 8.0)])
-    _place_sequence(by_category.get("cart", []), registry, width, depth, [(width * 0.42, depth * 0.23, 0.0)])
-    _place_sequence(by_category.get("pallet", []), registry, width, depth, [(width * 0.33, depth * 0.34, 0.0)])
-    _place_sequence(by_category.get("pallet_load", []), registry, width, depth, [(width * 0.22, depth * 0.64, 0.0)])
+    _place_sequence(by_category.get("cart", []), registry, width, depth, [(width * 0.57, depth * 0.20, 0.0)])
+    _place_sequence(by_category.get("pallet", []), registry, width, depth, [(width * 0.38, depth * 0.27, 0.0), (width * 0.22, depth * 0.42, 8.0)])
+    _place_sequence(by_category.get("pallet_load", []), registry, width, depth, [(width * 0.29, depth * 0.64, 0.0)])
     _place_sequence(by_category.get("barrier", []), registry, width, depth, [(width * 0.56, depth * 0.34, 90.0)])
     _place_sequence(by_category.get("floor_marking", []), registry, width, depth, [(width * 0.52, depth * 0.28, 0.0)])
     _place_sequence(by_category.get("sign", []), registry, width, depth, [(width * 0.78, depth * 0.60, -12.0)])
-    _place_sequence(by_category.get("cylinder", []), registry, width, depth, [(width * 0.13, depth * 0.70, 0.0), (width * 0.20, depth * 0.72, 0.0)])
+    _place_sequence(by_category.get("cylinder", []), registry, width, depth, [(width * 0.11, depth * 0.72, 0.0), (width * 0.12, depth * 0.58, 0.0)])
     _place_sequence(by_category.get("container", []), registry, width, depth, [(width * 0.18, depth * 0.43, -8.0), (width * 0.24, depth * 0.42, 10.0)])
     _place_sequence(by_category.get("bin", []), registry, width, depth, [(width * 0.86, depth * 0.46, 0.0), (width * 0.91, depth * 0.52, 0.0)])
     _place_sequence(by_category.get("bag", []), registry, width, depth, [(width * 0.30, depth * 0.46, 6.0), (width * 0.37, depth * 0.45, -8.0)])
@@ -120,13 +120,25 @@ def stage_warehouse_presentation_layout(scene: SceneSpec, registry: AssetRegistr
         shelf_children = [
             obj
             for obj in updated.objects
-            if obj.category == "box" and (obj.parent_id == shelf.id or obj.relation in {"on", "inside"} or obj.parent_id is None)
+            if obj.category == "box"
+            and (
+                obj.parent_id == shelf.id
+                or (obj.parent_id is None and obj.relation in {None, "on", "inside", "near"})
+            )
         ]
-        for child in shelf_children:
+        shelf_capacity = _support_child_capacity(shelf, shelf_children, registry)
+        supported_children = shelf_children[:shelf_capacity]
+        overflow_children = shelf_children[shelf_capacity:]
+        for child in supported_children:
             child.parent_id = shelf.id
             child.role = "child"
             child.relation = "on"
-        _place_children_on_parent(shelf, shelf_children, registry, front_bias=True)
+        for child in overflow_children:
+            child.parent_id = None
+            child.role = "parent"
+            child.relation = "near"
+        _place_children_on_parent(shelf, supported_children, registry, front_bias=True)
+        _place_overflow_boxes(overflow_children, registry, width, depth)
 
     if table:
         table_children = [obj for obj in updated.objects if obj.category in {"scanner", "tool", "monitor"}]
@@ -262,19 +274,67 @@ def _place_children_on_parent(parent: ObjectSpec, children: list[ObjectSpec], re
         return
     parent_dx, parent_dy, parent_dz = _dims(parent, registry)
     parent_asset = registry.get(parent.asset_id or "")
-    levels = parent_asset.support_heights or [1.0]
+    levels = _effective_support_levels(parent_asset)
     columns = max(1, (len(children) + len(levels) - 1) // len(levels))
+    shelf_like = _is_shelf_like(parent_asset)
     for index, child in enumerate(children):
         child_dx, child_dy, child_dz = _dims(child, registry)
         level = levels[index % len(levels)]
         column = index // len(levels)
-        usable_x = max(0.04, parent_dx - child_dx - 0.18)
-        usable_y = max(0.04, parent_dy - child_dy - 0.16)
+        side_clearance = 0.28 if shelf_like else 0.18
+        usable_x = max(0.0, parent_dx - child_dx - side_clearance)
+        usable_y = max(0.0, parent_dy - child_dy - 0.12)
         local_x = 0.0 if columns == 1 else -usable_x * 0.5 + usable_x * (column / max(1, columns - 1))
-        local_y = -usable_y * 0.28 if front_bias else 0.0
+        if shelf_like and front_bias:
+            shelf_clearance_y = max(0.0, parent_dy - child_dy)
+            local_y = -min(parent_dy * 0.18, shelf_clearance_y * 0.45)
+        else:
+            local_y = -usable_y * 0.28 if front_bias else 0.0
         child.placement.x, child.placement.y = local_to_world(parent, local_x, local_y)
         child.placement.z = parent.placement.z - parent_dz * 0.5 + parent_dz * float(level) + child_dz * 0.5
         child.placement.yaw_deg = parent.placement.yaw_deg
+
+
+def _is_shelf_like(asset) -> bool:
+    tags = {tag.lower() for tag in asset.tags}
+    return asset.category == "shelf" or bool(tags.intersection({"shelf", "pallet_rack", "rack"}))
+
+
+def _effective_support_levels(asset) -> list[float]:
+    levels = asset.support_heights or [1.0]
+    tags = {tag.lower() for tag in asset.tags}
+    if "pallet_rack" in tags and len(levels) > 2:
+        return [levels[0], levels[1]]
+    return levels
+
+
+def _support_child_capacity(parent: ObjectSpec, children: list[ObjectSpec], registry: AssetRegistry) -> int:
+    if not children:
+        return 0
+    parent_asset = registry.get(parent.asset_id or "")
+    levels = _effective_support_levels(parent_asset)
+    parent_dx, parent_dy, _parent_dz = _dims(parent, registry)
+    viable_children = [
+        child
+        for child in children
+        if _dims(child, registry)[0] <= parent_dx - 0.20 and _dims(child, registry)[1] <= parent_dy - 0.06
+    ]
+    if not viable_children:
+        return 0
+    child_widths = [_dims(child, registry)[0] for child in viable_children]
+    slot_width = max(min(child_widths) + 0.12, 0.38)
+    usable_width = max(0.0, parent_dx - 0.28)
+    slots_per_level = max(1, int(usable_width // slot_width))
+    return min(len(viable_children), slots_per_level * len(levels))
+
+
+def _place_overflow_boxes(objects: list[ObjectSpec], registry: AssetRegistry, width: float, depth: float) -> None:
+    for index, obj in enumerate(objects):
+        col = index % 3
+        row = index // 3
+        x = width * 0.52 + col * 0.62
+        y = depth * 0.66 - row * 0.78
+        _place_floor(obj, registry, x, y, 6.0 if index % 2 == 0 else -8.0, width, depth)
 
 
 def _honor_table_near_constraints(

@@ -4,10 +4,12 @@ import argparse
 import json
 import math
 import sys
+from itertools import combinations
 from pathlib import Path
 
 import bpy
 from mathutils import Matrix, Vector
+from mathutils.bvhtree import BVHTree
 
 
 def parse_args() -> argparse.Namespace:
@@ -193,10 +195,10 @@ def semantic_style_for_mesh(asset: dict, obj_name: str) -> tuple[str, list[float
             return ("wood", [0.48, 0.28, 0.12], 18.0, 0.24, 0.055, 0.0)
         return ("cardboard", [0.58, 0.36, 0.16], 28.0, 0.22, 0.045, 0.0)
     if category == "box":
-        if "plastic" in name or "crate" in name or "plastic" in tags:
-            return ("blue_plastic", [0.04, 0.20, 0.48], 36.0, 0.10, 0.025, 0.0)
         if "wood" in name or "wooden" in tags:
             return ("wood", [0.48, 0.28, 0.12], 18.0, 0.24, 0.055, 0.0)
+        if "plastic" in name or "plastic" in tags:
+            return ("blue_plastic", [0.04, 0.20, 0.48], 36.0, 0.10, 0.025, 0.0)
         return ("cardboard", [0.58, 0.36, 0.16], 28.0, 0.22, 0.045, 0.0)
     if category == "barrier":
         return ("safety_orange", [0.95, 0.28, 0.04], 30.0, 0.08, 0.016, 0.0)
@@ -236,6 +238,7 @@ def enhance_imported_material(material, asset: dict, obj_name: str) -> None:
     _name, color, noise_scale, color_variation, bump_strength, metallic = semantic_style_for_mesh(asset, obj_name)
     source = str(asset.get("source", "")).lower()
     force_semantic_color = source == "huggingface_simready"
+    preserve_embedded_color = source == "project_authored"
     if force_semantic_color and material.node_tree:
         bsdf = material.node_tree.nodes.get("Principled BSDF")
         if bsdf and "Base Color" in bsdf.inputs:
@@ -248,7 +251,7 @@ def enhance_imported_material(material, asset: dict, obj_name: str) -> None:
         color_variation=color_variation,
         bump_strength=bump_strength,
         metallic=metallic,
-        affect_base_color=force_semantic_color or not material_has_image_texture(material),
+        affect_base_color=force_semantic_color or (not preserve_embedded_color and not material_has_image_texture(material)),
     )
 
 
@@ -557,7 +560,7 @@ def camera_projection_metrics(camera, objects: list, resolution: list[int]) -> d
 
 def select_presentation_camera(camera, objects: list, resolution: list[int], out_dir: Path) -> None:
     candidates = [
-        {"name": "front_context", "direction": (0.10, -1.0, 0.48), "margin": 1.16, "presentation_bias": 0.62},
+        {"name": "front_context", "direction": (0.10, -1.0, 0.48), "margin": 1.24, "presentation_bias": 0.62},
         {"name": "front_low", "direction": (0.10, -1.0, 0.34), "margin": 1.10, "presentation_bias": 0.18},
         {"name": "front_right", "direction": (0.58, -1.0, 0.42), "margin": 1.14, "presentation_bias": -0.20},
         {"name": "front_left", "direction": (-0.58, -1.0, 0.42), "margin": 1.14, "presentation_bias": -0.20},
@@ -662,6 +665,7 @@ def render_additional_views(camera, object_groups: dict, out_dir: Path, resoluti
     align_dir.mkdir(parents=True, exist_ok=True)
 
     outputs: dict = {"scene_views": {}, "object_alignment_views": {}}
+    camera_records: list[dict] = []
     scene_directions = {
         "front": (0.10, -1.0, 0.48),
         "left": (-1.0, -0.15, 0.50),
@@ -672,6 +676,7 @@ def render_additional_views(camera, object_groups: dict, out_dir: Path, resoluti
     for name, direction in scene_directions.items():
         target = views_dir / f"render_{name}.png"
         fit_camera_from_direction(camera, scene_meshes, resolution, direction, margin=1.16)
+        camera_records.append(camera_manifest_record(camera, f"render_{name}", resolution, "prompt2scene_blender_camera"))
         render_png(target, resolution)
         outputs["scene_views"][name] = str(target)
 
@@ -687,7 +692,28 @@ def render_additional_views(camera, object_groups: dict, out_dir: Path, resoluti
         outputs["object_alignment_views"][object_id] = str(target)
     set_mesh_render_visibility(None)
     (out_dir / "render_views.json").write_text(json.dumps(outputs, indent=2, sort_keys=True), encoding="utf-8")
+    (out_dir / "render_camera_manifest.json").write_text(
+        json.dumps({"cameras": camera_records}, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
     return outputs
+
+
+def camera_manifest_record(camera, camera_name: str, resolution: list[int], source: str) -> dict:
+    matrix = camera.matrix_world
+    quat = matrix.to_quaternion()
+    return {
+        "camera_name": camera_name,
+        "source": source,
+        "pose_confidence": "authored",
+        "position": [round(float(item), 8) for item in camera.location],
+        "quaternion_wxyz": [round(float(quat.w), 8), round(float(quat.x), 8), round(float(quat.y), 8), round(float(quat.z), 8)],
+        "matrix_world": [[round(float(matrix[row][col]), 8) for col in range(4)] for row in range(4)],
+        "type": str(camera.data.type),
+        "fov_deg": round(float(camera.data.angle) * 180.0 / math.pi, 6) if camera.data.type != "ORTHO" else None,
+        "ortho_scale": round(float(camera.data.ortho_scale), 6) if camera.data.type == "ORTHO" else None,
+        "resolution": [int(resolution[0]), int(resolution[1])],
+    }
 
 
 def add_warehouse_shell(width: float, depth: float, height: float, environment: dict) -> None:
@@ -869,6 +895,142 @@ def support_target_for(
     return "ground", 0.0
 
 
+def build_group_bvh(meshes: list):
+    bpy.context.view_layer.update()
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    vertices: list[Vector] = []
+    triangles: list[tuple[int, int, int]] = []
+    triangle_centers: list[Vector] = []
+    for mesh_obj in meshes:
+        if mesh_obj.type != "MESH":
+            continue
+        evaluated = mesh_obj.evaluated_get(depsgraph)
+        mesh_data = evaluated.to_mesh()
+        try:
+            offset = len(vertices)
+            world_vertices = [evaluated.matrix_world @ vertex.co for vertex in mesh_data.vertices]
+            vertices.extend(world_vertices)
+            for polygon in mesh_data.polygons:
+                indices = [offset + int(index) for index in polygon.vertices]
+                if len(indices) < 3:
+                    continue
+                first = indices[0]
+                for tri_index in range(1, len(indices) - 1):
+                    triangle = (first, indices[tri_index], indices[tri_index + 1])
+                    triangles.append(triangle)
+                    triangle_centers.append((vertices[triangle[0]] + vertices[triangle[1]] + vertices[triangle[2]]) / 3.0)
+        finally:
+            evaluated.to_mesh_clear()
+    if not vertices or not triangles:
+        return None, []
+    return BVHTree.FromPolygons(vertices, triangles, all_triangles=True, epsilon=0.0), triangle_centers
+
+
+def bounds_overlap(left: dict, right: dict, tolerance: float = 0.0) -> bool:
+    return all(
+        left["min"][axis] < right["max"][axis] - tolerance
+        and left["max"][axis] > right["min"][axis] + tolerance
+        for axis in range(3)
+    )
+
+
+def support_pair(scene: dict, left_id: str, right_id: str) -> tuple[str, str] | None:
+    objects = {obj["id"]: obj for obj in scene["objects"]}
+    left = objects[left_id]
+    right = objects[right_id]
+    if left.get("parent_id") == right_id and left.get("relation") in {"on", "inside"}:
+        return left_id, right_id
+    if right.get("parent_id") == left_id and right.get("relation") in {"on", "inside"}:
+        return right_id, left_id
+    return None
+
+
+def allowed_support_contact_overlap(
+    scene: dict,
+    child_id: str,
+    parent_id: str,
+    left_id: str,
+    right_id: str,
+    overlap_pairs: list[tuple[int, int]],
+    centers_by_id: dict[str, list[Vector]],
+    bounds_by_id: dict,
+    support_planes_by_id: dict[str, list[float]],
+    contact_band: float,
+) -> bool:
+    objects = {obj["id"]: obj for obj in scene["objects"]}
+    child = objects[child_id]
+    child_asset = scene["_assets"][child["asset_id"]]
+    support_model, target_z = support_target_for(child, child_asset, scene, bounds_by_id, support_planes_by_id)
+    if target_z is None or support_model == "missing_mesh_support_plane":
+        return False
+    for left_triangle, right_triangle in overlap_pairs:
+        left_center = centers_by_id[left_id][left_triangle]
+        right_center = centers_by_id[right_id][right_triangle]
+        child_center = left_center if left_id == child_id else right_center
+        parent_center = right_center if left_id == child_id else left_center
+        child_at_contact = abs(float(child_center.z) - float(target_z)) <= contact_band
+        parent_at_contact = abs(float(parent_center.z) - float(target_z)) <= contact_band
+        if not (child_at_contact and parent_at_contact):
+            return False
+    return True
+
+
+def render_collision_failures(
+    scene: dict,
+    object_groups: dict,
+    bounds_by_id: dict,
+    support_planes_by_id: dict[str, list[float]],
+    contact_band: float = 0.03,
+) -> list[dict]:
+    bvh_by_id = {}
+    centers_by_id: dict[str, list[Vector]] = {}
+    for object_id, meshes in object_groups.items():
+        if object_id not in bounds_by_id:
+            continue
+        tree, centers = build_group_bvh(meshes)
+        if tree is None:
+            continue
+        bvh_by_id[object_id] = tree
+        centers_by_id[object_id] = centers
+
+    failures: list[dict] = []
+    object_specs = {obj["id"]: obj for obj in scene["objects"]}
+    for left_id, right_id in combinations(sorted(bvh_by_id), 2):
+        left_asset = scene["_assets"][object_specs[left_id]["asset_id"]]
+        right_asset = scene["_assets"][object_specs[right_id]["asset_id"]]
+        if "floor_marking" in {left_asset.get("category"), right_asset.get("category")}:
+            continue
+        if not bounds_overlap(bounds_by_id[left_id], bounds_by_id[right_id], tolerance=0.0):
+            continue
+        overlap_pairs = bvh_by_id[left_id].overlap(bvh_by_id[right_id])
+        if not overlap_pairs:
+            continue
+        pair = support_pair(scene, left_id, right_id)
+        if pair and allowed_support_contact_overlap(
+            scene,
+            child_id=pair[0],
+            parent_id=pair[1],
+            left_id=left_id,
+            right_id=right_id,
+            overlap_pairs=overlap_pairs,
+            centers_by_id=centers_by_id,
+            bounds_by_id=bounds_by_id,
+            support_planes_by_id=support_planes_by_id,
+            contact_band=contact_band,
+        ):
+            continue
+        failures.append(
+            {
+                "object_a": left_id,
+                "object_b": right_id,
+                "reason": "render_mesh_triangle_overlap",
+                "overlap_triangle_pairs": len(overlap_pairs),
+                "support_pair": list(pair) if pair else None,
+            }
+        )
+    return failures
+
+
 def validate_render_support(scene: dict, object_groups: dict, out_dir: Path, tolerance: float = 0.065) -> None:
     bounds_by_id: dict[str, dict] = {}
     for object_id, meshes in object_groups.items():
@@ -941,17 +1103,24 @@ def validate_render_support(scene: dict, object_groups: dict, out_dir: Path, tol
                 "status": status,
             }
         )
+    support_failure_count = len(failures)
+    collision_failures = render_collision_failures(scene, object_groups, bounds_by_id, support_planes_by_id)
+    failures.extend(collision_failures)
     report = {
         "ok": not failures,
         "tolerance_m": tolerance,
-        "visual_support_failure_count": len(failures),
+        "visual_support_failure_count": support_failure_count,
+        "visual_collision_failure_count": len(collision_failures),
         "failures": failures,
         "objects": records,
     }
     (out_dir / "render_validation.json").write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
     if failures:
-        details = "; ".join(f"{item['object_id']} error={item.get('error_m', 'n/a')}" for item in failures[:8])
-        raise RuntimeError(f"render visual support validation failed: {details}")
+        details = "; ".join(
+            f"{item.get('object_id') or item.get('object_a')} error={item.get('error_m', item.get('reason', 'n/a'))}"
+            for item in failures[:8]
+        )
+        raise RuntimeError(f"render visual validation failed: {details}")
 
 
 def main() -> None:

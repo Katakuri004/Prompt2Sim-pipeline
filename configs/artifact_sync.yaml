@@ -1,0 +1,32 @@
+paths:
+  local_cache_root: data/lerobot_cache
+  artifact_root: outputs/lerobot_phase1
+  remote_root: gdrive:Scenethesis
+
+sync:
+  backend: rclone
+  rclone_remote: gdrive
+  manifest_name: artifact_manifest.json
+
+artifact_types:
+  dataset:
+    local_subdir: datasets
+    remote_subdir: datasets
+  checkpoint:
+    local_subdir: checkpoints
+    remote_subdir: checkpoints
+  eval:
+    local_subdir: evals
+    remote_subdir: evals
+
+retention:
+  keep:
+    - accepted_datasets
+    - checkpoints
+    - evaluation_reports
+    - mp4_videos
+  prune:
+    - temporary_frames
+  eval_exclude_patterns:
+    - visual_twin_frames/**
+    - episodes/*_rgb/**

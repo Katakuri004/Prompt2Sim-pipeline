@@ -21,6 +21,8 @@ def build_success_qualification(
     correspondence = read_json(target / "correspondence_diagnostics.json") if (target / "correspondence_diagnostics.json").exists() else {}
     depth_pose = read_json(target / "depth_pose_refinement.json") if (target / "depth_pose_refinement.json").exists() else {}
     joint_pose = read_json(target / "joint_pose_optimizer.json") if (target / "joint_pose_optimizer.json").exists() else {}
+    asset_correspondence = read_json(target / "asset_correspondence.json") if (target / "asset_correspondence.json").exists() else {}
+    guidance_validation = read_json(target / "guidance_validation.json") if (target / "guidance_validation.json").exists() else {}
     required_files = [
         "scene_spec.json",
         "scene.glb",
@@ -30,12 +32,36 @@ def build_success_qualification(
         "pipeline_diagnostics.json",
         "depth_pose_refinement.json",
         "joint_pose_optimizer.json",
+        "asset_correspondence.json",
+        "guidance_validation.json",
     ]
     checks = [
         QualificationCheck(
             name="required_outputs",
             ok=all((target / name).is_file() for name in required_files),
             detail=", ".join(name for name in required_files if not (target / name).is_file()) or "ok",
+        ),
+        QualificationCheck(
+            name="guidance_inventory",
+            ok=bool(guidance_validation.get("ok", False)),
+            detail=(
+                f"ok={guidance_validation.get('ok', False)}, "
+                f"attempts={len(guidance_validation.get('attempts', []))}, "
+                f"provider={guidance_validation.get('provider', 'missing')}"
+            ),
+        ),
+        QualificationCheck(
+            name="asset_correspondence",
+            ok=(
+                bool(asset_correspondence.get("ok", False))
+                and int(asset_correspondence.get("matched_object_count", -1)) == len(scene.objects)
+                and int(asset_correspondence.get("failed_object_count", -1)) == 0
+            ),
+            detail=(
+                f"matched={asset_correspondence.get('matched_object_count', 'missing')}/{len(scene.objects)}, "
+                f"failed={asset_correspondence.get('failed_object_count', 'missing')}, "
+                f"provider={asset_correspondence.get('provider', 'missing')}"
+            ),
         ),
         QualificationCheck(
             name="object_count",
@@ -55,7 +81,10 @@ def build_success_qualification(
         QualificationCheck(
             name="render_visual_support",
             ok=bool(render_validation.get("ok", False)),
-            detail=f"visual_support_failure_count={render_validation.get('visual_support_failure_count', 'missing')}",
+            detail=(
+                f"visual_support_failure_count={render_validation.get('visual_support_failure_count', 'missing')}, "
+                f"visual_collision_failure_count={render_validation.get('visual_collision_failure_count', 'missing')}"
+            ),
         ),
         QualificationCheck(
             name="depth_pose_refinement",

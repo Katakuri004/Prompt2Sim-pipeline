@@ -22,11 +22,13 @@ class ScenePlanner:
         model: str = "gpt-4o-mini",
         system_prompt_path: str | Path | None = None,
         max_retries: int = 3,
+        max_objects: int = 18,
     ):
         self.client = client or OpenAIClient()
         self.model = os.getenv("OPENAI_MODEL", model)
         self.system_prompt_path = Path(system_prompt_path) if system_prompt_path else None
         self.max_retries = max_retries
+        self.max_objects = max_objects
 
     def plan(self, prompt: str, registry: AssetRegistry, bounds: tuple[float, float, float]) -> SceneSpec:
         if not self.client.configured:
@@ -55,13 +57,22 @@ class ScenePlanner:
             for asset in registry.assets
         ]
         category_requirements = prompt_category_requirements(prompt, registry)
+        trait_requirements = prompt_asset_trait_requirements(prompt, registry)
+        instance_plan = required_instance_plan(category_requirements, trait_requirements)
+        if len(instance_plan) > self.max_objects:
+            raise ValueError(
+                "prompt requires "
+                f"{len(instance_plan)} deterministic object instances, exceeding maximum_object_count="
+                f"{self.max_objects}: {json.dumps(instance_plan, sort_keys=True)}"
+            )
         user_payload = {
             "prompt": prompt,
             "scene_bounds": bounds,
             "available_assets": registry_summary,
             "required_category_counts": category_requirements,
-            "required_instance_plan": required_instance_plan(category_requirements),
-            "required_asset_traits": prompt_asset_trait_requirements(prompt, registry),
+            "required_instance_plan": instance_plan,
+            "maximum_object_count": self.max_objects,
+            "required_asset_traits": trait_requirements,
             "required_category_contract": {
                 "rule": "For each required_category_counts entry, create at least that many objects whose category exactly equals the entry key.",
                 "examples": required_category_examples(category_requirements),
@@ -82,6 +93,12 @@ class ScenePlanner:
                 "Create a constraint for every non-anchor object relation.",
                 "Object ids must be semantic instance ids such as shelf_01 or box_01, never registry asset ids.",
             ],
+            "object_count_contract": (
+                "Do not exceed maximum_object_count. Treat required_instance_plan as the default complete inventory. "
+                "Add an object outside that plan only when the user prompt explicitly names its category, and remain "
+                "within maximum_object_count. Every planned object must be independently visible in one guidance image, "
+                "segmented, depth-projected, and matched to a real asset. Do not add decorative inventory."
+            ),
             "object_id_contract": {
                 "rule": "object.id identifies a scene instance; object.asset_id identifies the selected asset.",
                 "valid_examples": ["shelf_01", "table_01", "box_01", "chair_01"],
@@ -117,9 +134,11 @@ class ScenePlanner:
                 )
                 scene = SceneSpec.model_validate(data)
                 normalize_planned_categories(scene, registry)
-                errors = validate_planned_scene(prompt, scene, registry)
+                errors = validate_planned_scene(prompt, scene, registry, max_objects=self.max_objects)
                 if errors:
-                    raise ValueError(planner_validation_feedback(scene, errors, category_requirements))
+                    raise ValueError(
+                        planner_validation_feedback(scene, errors, category_requirements, trait_requirements)
+                    )
                 return scene
             except (ValidationError, RuntimeError, ValueError) as exc:
                 last_error = exc
@@ -136,13 +155,20 @@ class ScenePlanner:
         raise RuntimeError(f"planner failed to produce valid SceneSpec: {last_error}")
 
 
-def validate_planned_scene(prompt: str, scene: SceneSpec, registry: AssetRegistry) -> list[str]:
+def validate_planned_scene(
+    prompt: str,
+    scene: SceneSpec,
+    registry: AssetRegistry,
+    max_objects: int = 18,
+) -> list[str]:
     prompt_lower = prompt.lower()
     categories = [normalize_category(obj.category) for obj in scene.objects]
     category_requirements = prompt_category_requirements(prompt, registry)
     errors: list[str] = []
     if len(scene.objects) < 6:
         errors.append("scene must contain at least 6 objects")
+    if len(scene.objects) > max_objects:
+        errors.append(f"scene contains {len(scene.objects)} objects; maximum is {max_objects}")
     if any(term in prompt_lower for term in ["lab", "workbench", "robotics"]) and len(scene.objects) < 8:
         errors.append("robotics/workbench lab scenes must contain at least 8 objects")
     for category, minimum in category_requirements.items():
@@ -175,6 +201,8 @@ def validate_planned_scene(prompt: str, scene: SceneSpec, registry: AssetRegistr
             errors.append(f"{obj.id} is non-anchor but has no relation")
         if obj.relation in {"on", "inside"} and not obj.parent_id:
             errors.append(f"{obj.id} is child but has no parent_id")
+        if obj.relation == "facing" and not prompt_requests_facing_relation(prompt_lower):
+            errors.append(f"{obj.id} uses facing, but the prompt does not request an orientation relation")
     constraint_subjects = {constraint.subject_id for constraint in scene.constraints}
     for obj in scene.objects:
         if obj.role != "anchor" and obj.id not in constraint_subjects:
@@ -190,7 +218,12 @@ def normalize_planned_categories(scene: SceneSpec, registry: AssetRegistry) -> N
             obj.category = normalized
 
 
-def planner_validation_feedback(scene: SceneSpec, errors: list[str], category_requirements: dict[str, int] | None = None) -> str:
+def planner_validation_feedback(
+    scene: SceneSpec,
+    errors: list[str],
+    category_requirements: dict[str, int] | None = None,
+    trait_requirements: list[dict[str, Any]] | None = None,
+) -> str:
     required_constraints = []
     anchors = [obj.id for obj in scene.objects if obj.role == "anchor"]
     default_target = anchors[0] if anchors else None
@@ -211,7 +244,7 @@ def planner_validation_feedback(scene: SceneSpec, errors: list[str], category_re
     return (
         "; ".join(errors)
         + ". Required instance plan: "
-        + json.dumps(required_instance_plan(category_requirements or {}), sort_keys=True)
+        + json.dumps(required_instance_plan(category_requirements or {}, trait_requirements), sort_keys=True)
         + ". Missing constraint subjects: "
         + json.dumps(missing_subjects, sort_keys=True)
         + ". Required non-anchor constraints: "
@@ -232,7 +265,10 @@ def required_category_examples(requirements: dict[str, int]) -> list[dict[str, A
     return examples
 
 
-def required_instance_plan(requirements: dict[str, int]) -> list[dict[str, Any]]:
+def required_instance_plan(
+    requirements: dict[str, int],
+    trait_requirements: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
     named_ids = {
         "bag": ["cement_bag_01", "cement_bag_02"],
         "barrier": ["safety_barrier_01", "safety_barrier_02"],
@@ -273,11 +309,31 @@ def required_instance_plan(requirements: dict[str, int]) -> list[dict[str, Any]]
     }
     plan: list[dict[str, Any]] = []
     for category, minimum in sorted(requirements.items()):
-        preferred = named_ids.get(category, [])
+        preferred = trait_instance_ids(category, trait_requirements or [])
+        preferred.extend(object_id for object_id in named_ids.get(category, []) if object_id not in preferred)
         for index in range(minimum):
             object_id = preferred[index] if index < len(preferred) else f"{category}_{index + 1:02d}"
             plan.append({"id": object_id, "category": category})
     return plan
+
+
+def trait_instance_ids(category: str, requirements: list[dict[str, Any]]) -> list[str]:
+    prefixes = {
+        ("box", "cardboard"): "cardboard_box",
+        ("box", "wooden"): "wooden_crate",
+        ("box", "plastic"): "plastic_crate",
+        ("bin", "trash"): "trash_can",
+    }
+    object_ids: list[str] = []
+    for requirement in requirements:
+        if requirement.get("category") != category:
+            continue
+        prefix = prefixes.get((category, str(requirement.get("trait"))))
+        if not prefix:
+            continue
+        for index in range(1, int(requirement.get("minimum", 0)) + 1):
+            object_ids.append(f"{prefix}_{index:02d}")
+    return object_ids
 
 
 def count_trait_objects(scene: SceneSpec, category: str, trait: str) -> int:
@@ -350,6 +406,8 @@ def prompt_category_requirements(prompt: str, registry: AssetRegistry) -> dict[s
         "trolleys": "cart",
         "forklift": "forklift",
         "forklifts": "forklift",
+        "pallet stacker": "forklift",
+        "walk-behind stacker": "forklift",
         "pallet": "pallet",
         "pallets": "pallet",
         "wrapped pallet": "pallet_load",
@@ -446,26 +504,10 @@ def prompt_category_requirements(prompt: str, registry: AssetRegistry) -> dict[s
             "shelf": 1,
             "table": 1,
             "forklift": 1,
-            "cart": 1,
-            "light": 2,
-            "door": 1,
-            "sign": 1,
-            "utility_box": 1,
-            "duct": 1,
-            "pipe": 1,
             "barrier": 1,
-            "camera": 1,
             "pallet": 1,
-            "pallet_load": 1,
             "floor_marking": 1,
-            "ladder": 1,
-            "cylinder": 2,
-            "hand_truck": 1,
-            "bin": 1,
-            "cabinet": 1,
-            "container": 1,
-            "scanner": 1,
-            "box": 6,
+            "box": 2,
         }
         for category, minimum in contextual.items():
             if category in registry.categories:
@@ -476,3 +518,18 @@ def prompt_category_requirements(prompt: str, registry: AssetRegistry) -> dict[s
 def prompt_has_term(prompt_lower: str, term: str) -> bool:
     pattern = r"(?<![a-z0-9_])" + re.escape(term.lower()) + r"(?![a-z0-9_])"
     return re.search(pattern, prompt_lower) is not None
+
+
+def prompt_requests_facing_relation(prompt_lower: str) -> bool:
+    return any(
+        phrase in prompt_lower
+        for phrase in (
+            "facing",
+            "faces the",
+            "face the",
+            "oriented toward",
+            "oriented towards",
+            "pointing toward",
+            "pointing towards",
+        )
+    )

@@ -1645,7 +1645,7 @@ assets:
   - 0.35
 - id: hf_forklift_orange_01
   category: forklift
-  name: orange warehouse forklift
+  name: compact walk-behind electric pallet stacker
   dimensions:
   - 2.45
   - 1.05
@@ -1655,7 +1655,8 @@ assets:
   tags:
   - warehouse
   - forklift
-  - vehicle
+  - pallet_stacker
+  - walk_behind
   - logistics
   - floor
   - industrial
@@ -1892,3 +1893,307 @@ assets:
   license: CC-BY-4.0
   attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
   thumbnail_path: ..\assets\library\hf_simready\hf_safety_tape_yellow_black_01\hf_safety_tape_yellow_black_01.png
+- id: hf_forklift_red_01
+  category: forklift
+  name: red enclosed warehouse forklift
+  dimensions:
+  - 2.8
+  - 1.25
+  - 2.15
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - forklift
+  - vehicle
+  - logistics
+  - floor
+  - industrial
+  - enclosed
+  - red
+  color:
+  - 0.72
+  - 0.08
+  - 0.06
+  glb_path: ..\assets\library\hf_simready\hf_forklift_red_01\hf_forklift_red_01.glb
+  source: huggingface_simready
+  source_id: Props/general/SM_Forklift_B01_Red_01/SM_Forklift_B01_Red_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_Forklift_B01_Red_01/SM_Forklift_B01_Red_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_forklift_red_01\hf_forklift_red_01.png
+- id: hf_forklift_blue_01
+  category: forklift
+  name: blue enclosed warehouse forklift
+  dimensions:
+  - 3.1
+  - 1.35
+  - 2.25
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - forklift
+  - vehicle
+  - logistics
+  - floor
+  - industrial
+  - enclosed
+  - blue
+  color:
+  - 0.05
+  - 0.18
+  - 0.62
+  glb_path: ..\assets\library\hf_simready\hf_forklift_blue_01\hf_forklift_blue_01.glb
+  source: huggingface_simready
+  source_id: Props/general/SM_Forklift_C01_Blue_01/SM_Forklift_C01_Blue_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_Forklift_C01_Blue_01/SM_Forklift_C01_Blue_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\library\hf_simready\hf_forklift_blue_01\hf_forklift_blue_01.png
+- id: hf_metal_stainless_table_01
+  category: table
+  name: stainless steel warehouse worktable
+  dimensions:
+  - 1.7999
+  - 0.85
+  - 0.6989
+  support_kind: surface
+  support_heights:
+  - 1.0
+  tags:
+  - warehouse
+  - table
+  - workbench
+  - packing
+  - stainless
+  - metal
+  - gray
+  - support
+  color:
+  - 0.62
+  - 0.64
+  - 0.64
+  glb_path: ..\assets\library\hf_simready\hf_metal_stainless_table_01\hf_metal_stainless_table_01.glb
+  source: huggingface_simready
+  source_id: Props/general/SM_MetalStainlessTable_A03_01/SM_MetalStainlessTable_A03_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_MetalStainlessTable_A03_01/SM_MetalStainlessTable_A03_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\thumbnails\warehouse\hf_metal_stainless_table_01.png
+- id: hf_heavy_duty_packing_table_01
+  category: table
+  name: heavy duty gray metal packing table
+  dimensions:
+  - 1.8659
+  - 0.9941
+  - 1.2195
+  support_kind: surface
+  support_heights:
+  - 1.0
+  tags:
+  - warehouse
+  - table
+  - workbench
+  - packing
+  - heavy_duty
+  - metal
+  - gray
+  - support
+  color:
+  - 0.58
+  - 0.6
+  - 0.6
+  glb_path: ..\assets\library\hf_simready\hf_heavy_duty_packing_table_01\hf_heavy_duty_packing_table_01.glb
+  source: huggingface_simready
+  source_id: Props/general/SM_HeavyDutyPackingTable_C01_01/SM_HeavyDutyPackingTable_C01_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_HeavyDutyPackingTable_C01_01/SM_HeavyDutyPackingTable_C01_01.usd
+  license: CC-BY-4.0
+  attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  thumbnail_path: ..\assets\thumbnails\warehouse\hf_heavy_duty_packing_table_01.png
+- id: derived_open_stainless_worktable_01
+  category: table
+  name: open-underframe stainless steel warehouse worktable
+  dimensions:
+  - 1.7999
+  - 0.85
+  - 0.6989
+  support_kind: surface
+  support_heights:
+  - 1.0
+  tags:
+  - warehouse
+  - table
+  - workbench
+  - packing
+  - stainless
+  - metal
+  - gray
+  - open_underframe
+  - no_lower_shelf
+  - support
+  color:
+  - 0.62
+  - 0.64
+  - 0.64
+  glb_path: ..\assets\library\derived\derived_open_stainless_worktable_01.glb
+  source: derived_huggingface_simready
+  source_id: Props/general/SM_MetalStainlessTable_A03_01/SM_MetalStainlessTable_A03_01.usd
+  source_url: https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_MetalStainlessTable_A03_01/SM_MetalStainlessTable_A03_01.usd
+  license: CC-BY-4.0
+  attribution: Derived from NVIDIA PhysicalAI-SimReady-Warehouse-01 SM_MetalStainlessTable_A03_01;
+    lower shelf removed
+  thumbnail_path: ..\assets\thumbnails\warehouse\derived_open_stainless_worktable_01.png
+- id: authored_vertical_slot_barrier_01
+  category: barrier
+  name: orange vertical-slot warehouse safety barrier
+  dimensions:
+  - 1.25
+  - 0.1
+  - 1.05
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - barrier
+  - safety
+  - orange
+  - floor
+  - industrial
+  - flat_panel
+  - four_vertical_openings
+  - no_bulky_base
+  color:
+  - 1.0
+  - 0.22
+  - 0.015
+  glb_path: ..\assets\library\project_authored\authored_vertical_slot_barrier_01.glb
+  source: project_authored
+  source_id: scripts/build_project_warehouse_assets.py
+  source_url: https://github.com/Katakuri004/Prompt2Sim-pipeline
+  license: CC0-1.0
+  attribution: Prompt2Sim project-authored asset
+  thumbnail_path: ..\assets\thumbnails\warehouse\authored_vertical_slot_barrier_01.png
+- id: authored_hazard_floor_marking_01
+  category: floor_marking
+  name: L-shaped yellow-black warehouse hazard floor marking
+  dimensions:
+  - 2.2
+  - 1.4
+  - 0.015
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - safety
+  - tape
+  - floor
+  - aisle
+  - marking
+  - yellow_black
+  - hazard_stripes
+  - L_shaped
+  color:
+  - 0.95
+  - 0.62
+  - 0.03
+  glb_path: ..\assets\library\project_authored\authored_hazard_floor_marking_01.glb
+  source: project_authored
+  source_id: scripts/build_project_warehouse_assets.py
+  source_url: https://github.com/Katakuri004/Prompt2Sim-pipeline
+  license: CC0-1.0
+  attribution: Prompt2Sim project-authored asset
+  thumbnail_path: ..\assets\thumbnails\warehouse\authored_hazard_floor_marking_01.png
+- id: authored_clean_cardboard_box_01
+  category: box
+  name: clean intact taped cardboard shipping box
+  dimensions:
+  - 0.55
+  - 0.42
+  - 0.38
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - cardboard
+  - shipping
+  - box
+  - carton
+  - clean
+  - intact
+  - closed
+  - packing_tape
+  - child
+  color:
+  - 0.57
+  - 0.29
+  - 0.085
+  glb_path: ..\assets\library\project_authored\authored_clean_cardboard_box_01.glb
+  source: project_authored
+  source_id: scripts/build_project_warehouse_assets.py
+  source_url: https://github.com/Katakuri004/Prompt2Sim-pipeline
+  license: CC0-1.0
+  attribution: Prompt2Sim project-authored asset
+  thumbnail_path: ..\assets\thumbnails\warehouse\authored_clean_cardboard_box_01.png
+- id: authored_wood_metal_packing_table_01
+  category: table
+  name: light wood top gray metal open-frame packing table
+  dimensions:
+  - 1.6
+  - 0.75
+  - 0.9
+  support_kind: surface
+  support_heights:
+  - 1.0
+  tags:
+  - warehouse
+  - table
+  - workbench
+  - packing
+  - light_wood_top
+  - gray_metal_frame
+  - open_underframe
+  - no_lower_shelf
+  - support
+  color:
+  - 0.58
+  - 0.44
+  - 0.3
+  glb_path: ..\assets\library\project_authored\authored_wood_metal_packing_table_01.glb
+  source: project_authored
+  source_id: scripts/build_project_warehouse_assets.py
+  source_url: https://github.com/Katakuri004/Prompt2Sim-pipeline
+  license: CC0-1.0
+  attribution: Prompt2Sim project-authored asset
+  thumbnail_path: ..\assets\thumbnails\warehouse\authored_wood_metal_packing_table_01.png
+- id: authored_x_braced_wooden_crate_01
+  category: box
+  name: closed X-braced wooden warehouse shipping crate
+  dimensions:
+  - 0.65
+  - 0.55
+  - 0.62
+  support_kind: none
+  support_heights: []
+  tags:
+  - warehouse
+  - wooden
+  - crate
+  - shipping
+  - box
+  - closed
+  - intact
+  - framed
+  - x_braced
+  - child
+  color:
+  - 0.58
+  - 0.32
+  - 0.11
+  glb_path: ..\assets\library\project_authored\authored_x_braced_wooden_crate_01.glb
+  source: project_authored
+  source_id: scripts/build_project_warehouse_assets.py
+  source_url: https://github.com/Katakuri004/Prompt2Sim-pipeline
+  license: CC0-1.0
+  attribution: Prompt2Sim project-authored asset
+  thumbnail_path: ..\assets\thumbnails\warehouse\authored_x_braced_wooden_crate_01.png

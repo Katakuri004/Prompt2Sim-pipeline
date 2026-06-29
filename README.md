@@ -1,176 +1,432 @@
-# Prompt2Sim-pipeline
+# Prompt2Sim Pipeline
 
-A local Scenethesis-inspired text-to-3D scene generation pipeline.
+Prompt2Sim Pipeline is a local research prototype for generating warehouse-style
+3D scenes from language and turning selected scenes into robot simulation tasks.
+The project combines prompt planning, image-guided scene generation, asset
+retrieval, geometry validation, MuJoCo compilation, deterministic Panda teacher
+rollouts, accepted demonstration export, and a first LeRobot ACT training path.
 
-Reference paper: [Scenethesis: A Language and Vision Agentic Framework for 3D Scene Generation](https://arxiv.org/pdf/2505.02836)
+Reference papers:
 
-## Current Direction
+- [Scenethesis: A Language and Vision Agentic Framework for 3D Scene Generation](https://arxiv.org/pdf/2505.02836)
+- [GRS: Generating Robotic Simulation Tasks from Real-World Images](https://arxiv.org/abs/2410.15536)
 
-The repo now has two paths:
+## Current Status
 
-- `scripts/run_demo.py`: the original lightweight MVP path.
-- `scripts/run_faithful.py`: the strict paper-faithful path under active development.
+The repository has two main execution paths:
 
-Use the faithful runner for the warehouse recreation work. It fails when a required model, checkpoint, mesh, CUDA capability, OpenAI call, or Blender export is missing. It should not be treated as successful when it cannot run the intended component.
+- `scripts/run_faithful.py`: the strict scene-generation pipeline inspired by
+  Scenethesis and GRS.
+- `scripts/evaluate_mujoco_scene.py`: the MuJoCo evaluation path for compiled
+  scenes and robot policies.
 
-## Faithful Pipeline
+The current MuJoCo bridge has been validated on a warehouse barcode-scanner
+pick-and-place task with the real Franka Panda MuJoCo model. The deterministic
+teacher can build a strict joint waypoint plan, run grasp and completion probes,
+execute the full rollout, record RGB observations, save MP4 debug videos, and
+export accepted episodes for LeRobot-style imitation learning.
 
-The strict path implements the current local approximation of the paper architecture:
+This is still a research prototype. The code is most useful for developers who
+want to inspect or extend the scene-to-simulation-to-demonstration workflow. It
+is not yet a general, production-ready robot data engine.
 
-1. OpenAI planner produces a strict `SceneSpec`.
-2. OpenAI image generation creates a guidance image.
-3. GroundingDINO plus SAM segments planned objects into boxes, masks, and crops.
-4. Depth Pro estimates dense depth.
-5. Mask/depth projection builds per-object point clouds and a 3D scene graph.
-6. Local CLIP retrieval selects mesh-backed assets from the warehouse registry.
-7. Depth-derived 3D boxes apply conservative metric scale/yaw pose refinement before SDF optimization.
-8. SDF/PyTorch3D optimization adjusts 5-DoF poses and checks support/collision.
-9. Blender renders `render.png`, alternate scene views, per-object alignment views, `scene.glb`, and `scene.usd` when Blender supports USD.
-10. RoMa matches guidance crops against rendered object views and writes per-object correspondence files plus pose history.
-11. The joint pose optimizer consumes Depth Pro graph boxes plus RoMa correspondences, applies bounded 5-DoF updates, and writes loss history before the second SDF/render pass.
-12. OpenAI vision judge scores the rendered scene with guidance plus multi-view render inputs and returns strict JSON repair actions.
-13. The repair loop applies only actionable scene changes, reruns optimization/render/judge, and writes final artifacts plus `qualification.json`.
+## Architecture
 
-The paper describes coarse LLM planning, image-guided scene graph extraction, asset retrieval, pose optimization with semantic correspondence and SDF-based physical constraints, and GPT-4o scene judgment. This repo now follows that structure, but remains smaller than the paper system: the asset database is a curated local warehouse pack, not a large Objaverse-scale subset.
+At a high level:
 
-## Hard Requirements
-
-- Windows with NVIDIA GPU and working CUDA.
-- Dedicated conda env, currently `scenethesis-faithful`.
-- OpenAI API key in local `.env`.
-- Blender 5.x installed or `BLENDER_PATH` set.
-- Downloaded checkpoints for GroundingDINO, SAM, Depth Pro, CLIP/RoMa dependencies, and PyTorch3D support.
-- Local mesh-backed warehouse asset registry at `configs/warehouse_asset_registry.yaml`.
-
-Do not put a real API key in `.env.example`. Use `.env` for secrets.
-
-## Setup
-
-Lightweight MVP dependencies:
-
-```bash
-pip install -r requirements.txt
+```text
+language prompt / assets / image guidance
+-> faithful scene generation
+-> SceneIR
+-> MJCF/XML/MJB compilation
+-> MuJoCo runtime
+-> Panda teacher planning
+-> strict rollout evaluation
+-> accepted RGB demos
+-> canonical LeRobot export
+-> ACT policy training
 ```
 
-Faithful CUDA environment:
+The main project pieces are:
+
+- `src/scenethesis_mvp/pipeline/`: faithful scene-generation orchestration.
+- `src/scenethesis_mvp/assets/`: asset registries, CLIP shortlisting, and
+  visual profile helpers.
+- `src/scenethesis_mvp/vision/`: image guidance, segmentation, depth, and
+  validation helpers.
+- `src/scenethesis_mvp/optimization/`: pose, SDF, and support/collision checks.
+- `src/scenethesis_mvp/mujoco_bridge/`: SceneIR to MuJoCo, Panda runtime,
+  teacher planning, evaluation, rendering, and replay.
+- `src/scenethesis_mvp/lerobot_bridge/`: accepted demo filtering and dataset
+  export.
+- `scripts/`: command-line entry points.
+- `configs/`: runtime, prompt, asset, MuJoCo, and artifact-sync configs.
+- `docs/`: design notes, debugging reports, architecture notes, and checkpoint
+  procedures.
+
+See [docs/project_architecture_flowchart.md](docs/project_architecture_flowchart.md)
+for a Mermaid architecture flowchart.
+
+## What Gets Generated
+
+The pipeline can produce:
+
+- planned scene specs
+- guidance images and validation reports
+- segmentation, depth, and scene-graph artifacts
+- asset correspondence reports
+- Blender renders and visual-twin artifacts
+- MuJoCo `scene.xml` and compiled `scene.mjb`
+- strict teacher plan diagnostics
+- grasp and completion probe reports
+- rollout traces and dense state traces
+- RGB frame streams
+- MP4 debug videos
+- accepted demo manifests
+- canonical LeRobot-style datasets
+- ACT policy checkpoints, when LeRobot is installed
+
+Generated artifacts are intentionally ignored by Git. Keep large outputs under
+`runs/`, `outputs/`, `data/`, or `models/`.
+
+## Requirements
+
+Core Python package:
+
+- Python 3.10+
+- `numpy`
+- `pydantic`
+- `PyYAML`
+- `python-dotenv`
+- `trimesh`
+- `rtree`
+- `openai`
+
+Faithful scene-generation path:
+
+- Windows or Linux with a CUDA-capable NVIDIA GPU
+- Blender 5.x, or `BLENDER_PATH` pointing to Blender
+- OpenAI API key in `.env`
+- GroundingDINO, SAM, Depth Pro, RoMa, OpenCLIP, and PyTorch3D dependencies
+- local warehouse asset registry and downloaded model checkpoints
+
+MuJoCo / robot path:
+
+- `mujoco`
+- `coacd`
+- `imageio`
+- real Panda assets vendored or available through the configured model path
+
+LeRobot training path:
+
+- PyTorch with CUDA
+- Hugging Face LeRobot installed on the training environment
+
+## Installation
+
+For the base package and tests:
+
+```powershell
+python -m pip install -e ".[dev]"
+```
+
+For MuJoCo evaluation:
+
+```powershell
+python -m pip install -e ".[dev,mujoco]"
+```
+
+For the local faithful environment, use the setup script:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/setup_faithful_env.ps1
+```
+
+Then download/import the external runtime assets that are not committed to Git:
+
+```powershell
 conda run -n scenethesis-faithful python scripts/download_faithful_checkpoints.py
 conda run -n scenethesis-faithful python scripts/import_polyhaven_assets.py --resolution 1k
 conda run -n scenethesis-faithful python scripts/import_hf_simready_assets.py
-conda run -n scenethesis-faithful python scripts/build_clip_asset_index.py --registry configs/warehouse_asset_registry.yaml --out assets/indexes/warehouse_clip_index.npz --device cuda
+conda run -n scenethesis-faithful python scripts/derive_open_worktable.py
+conda run -n scenethesis-faithful python scripts/build_clip_asset_index.py `
+  --registry configs/warehouse_asset_registry.yaml `
+  --out assets/indexes/warehouse_clip_index.npz `
+  --device cuda
 ```
 
-`scripts/import_hf_simready_assets.py` uses `configs/hf_simready_warehouse_manifest.yaml`; it downloads only declared Hugging Face SimReady asset directories and declared USD payload dependencies, converts those USD files to local GLB through Blender, and records license/source metadata in `assets/manifests/hf_simready_warehouse_assets.json`. It is not a bulk dataset clone.
+Never commit `.env` or real API keys.
 
-Runtime check:
+## Runtime Check
+
+Run a dependency/runtime check before starting an expensive generation job:
 
 ```powershell
-conda run -n scenethesis-faithful python scripts/run_faithful.py --prompt "warehouse storage area" --out runs/runtime_check --check-runtime-only
+conda run -n scenethesis-faithful python scripts/run_faithful.py `
+  --prompt "warehouse storage area" `
+  --out runs/runtime_check `
+  --check-runtime-only
 ```
 
-The runtime check writes `faithful_runtime_report.json` and exits non-zero if anything required is missing.
+The check writes `faithful_runtime_report.json` and exits non-zero if a required
+model, checkpoint, mesh, CUDA capability, OpenAI key, or Blender export is
+missing.
 
-## Faithful Warehouse Run
+## Faithful Scene Generation
+
+Example warehouse run:
 
 ```powershell
-conda run -n scenethesis-faithful python scripts/run_faithful.py --prompt "a busy warehouse storage and packing area with two steel storage shelves, many cardboard boxes, wooden crates, plastic crates, barrels, a hand truck, a metal trash can, a tool chest, a packing table, tools, a ladder, jerry cans, and a chair" --out runs/warehouse_faithful_rich_007 --repair-rounds 2
+conda run -n scenethesis-faithful python scripts/run_faithful.py `
+  --prompt "a coherent indoor warehouse aisle with a pallet rack, cardboard boxes, wooden crates, a full walk-behind pallet stacker, one pallet, a packing table holding a clearly visible metal toolbox and hand drill, an orange plastic safety barrier, industrial lighting, and concrete floor markings" `
+  --out runs/warehouse_grs_strict_next `
+  --repair-rounds 1
 ```
 
-To rerun from already generated guidance/segmentation/depth artifacts without pretending missing artifacts are valid:
+Resume mode validates existing artifacts before continuing:
 
 ```powershell
-conda run -n scenethesis-faithful python scripts/run_faithful.py --prompt "a busy warehouse storage and packing area with two steel storage shelves, many cardboard boxes, wooden crates, plastic crates, barrels, a hand truck, a metal trash can, a tool chest, a packing table, tools, a ladder, jerry cans, and a chair" --out runs/warehouse_faithful_rich_007 --repair-rounds 2 --resume-from-existing
+conda run -n scenethesis-faithful python scripts/run_faithful.py `
+  --prompt "a coherent indoor warehouse aisle with a pallet rack, cardboard boxes, wooden crates, a full walk-behind pallet stacker, one pallet, a packing table holding a clearly visible metal toolbox and hand drill, an orange plastic safety barrier, industrial lighting, and concrete floor markings" `
+  --out runs/warehouse_grs_strict_next `
+  --repair-rounds 1 `
+  --resume-from-existing
 ```
 
-Resume mode validates every required artifact before continuing.
+Expected scene-generation outputs include `scene_spec.json`, `guidance.png`,
+`guidance_validation.json`, `segmentation.json`, `depth.json`,
+`scene_graph_3d.json`, `clip_shortlist.json`, `asset_correspondence.json`,
+`scene.glb`, `scene.usd` when supported, `render.png`, `judge.json`,
+`repair_history.json`, and `qualification.json`.
 
-Expected final artifacts:
+## MuJoCo Teacher Evaluation
 
-- `coarse_scene_spec.json`
-- `guidance.png`
-- `segmentation.json`
-- `depth.json`
-- `scene_graph_3d.json`
-- `clip_retrieval.json`
-- `depth_pose_refinement.json`
-- `sdf_optimizer.json`
-- `scene_spec.json`
-- `scene.glb`
-- `scene.usd` when supported
-- `render.png`
-- `views/render_front.png`, `views/render_left.png`, `views/render_right.png`, `views/render_top_oblique.png`
-- `alignment_views/<object_id>.png`
-- `render_views.json`
-- `correspondences/<object_id>.npz`
-- `pose_alignment_history.json`
-- `correspondence_diagnostics.json`
-- `joint_pose_optimizer.json`
-- `pose_loss_history.json`
-- `metrics.json`
-- `judge.json`
-- `repair_history.json`
-- `qualification.json`
-- `report.md`
+The evaluator rebuilds the scene representation, compiles MuJoCo XML/MJB,
+validates task feasibility, creates the MuJoCo environment, runs a policy, and
+writes an episode report.
 
-## Verified Local Result
+Strict single-episode teacher smoke:
 
-The latest successful warehouse run is:
-
-```text
-runs/warehouse_faithful_rich_007
+```powershell
+python scripts/evaluate_mujoco_scene.py `
+  --run-dir runs/warehouse_gpt55_full_001 `
+  --out outputs/lerobot_phase1/teacher_fix_probe_smoke `
+  --target-object barcode_scanner_01 `
+  --episodes 1 `
+  --policy teacher_pick_place `
+  --visual-renderer none `
+  --run-grasp-probe
 ```
 
-Validation summary:
+Useful output files:
 
-- Objects: 19
-- Collision count: 0
-- Floating count: 0
-- Unsupported count: 0
-- SDF optimizer status: `ok`
-- Judge `needs_repair`: `false`
-- Render: `runs/warehouse_faithful_rich_007/render.png`
+- `mujoco_scene_ir.json`
+- `scene.xml`
+- `scene.mjb`
+- `teacher_plan.json`
+- `teacher_plan_search.json`
+- `teacher_waypoint_diagnostics.json`
+- `grasp_probe.json`
+- `grasp_probe_search.json`
+- `evaluation_report.json`
+- `episodes/episode_000_trace.json`
+- `episodes/episode_000_rollout_state_trace.json`
 
-The render is materially better than the early barrel/shelf-only output, but it is not yet at paper-demo quality. The largest remaining visual gaps are scene composition quality and the limited curated asset subset, not the absence of the core segmentation/depth/SDF/RoMa stages.
+The strict teacher path tests:
 
-## Strict Success Rules
+- `teacher_plan.ok`
+- selected base and grasp candidates
+- IK and joint-limit feasibility
+- static clearance
+- grasp probe feasibility
+- micro-lift
+- completion preview
+- collision count
+- target lift
+- release after place descent
+- stable final placement
 
-Current strict behavior:
+## Recording Demonstrations
 
-- Missing OpenAI key fails.
-- Missing Blender fails.
-- Missing CUDA fails.
-- Missing GroundingDINO/SAM/Depth Pro/RoMa/PyTorch3D/OpenCLIP dependencies fail.
-- Missing model checkpoints fail.
-- Missing mesh-backed assets fail after retrieval/runtime validation.
-- Missing segmentation masks, crops, depth arrays, or guidance images fail resume mode.
-- Invalid judge JSON fails.
-- No-op judge repair actions fail validation when `needs_repair=true`.
-- Missing `qualification.json` prevents a run from being accepted by `validate_run`.
-- Failed depth-pose refinement, joint pose optimization, visual support, judge repair, or RoMa correspondence diagnostics mark the run unqualified even if render artifacts exist.
-- PyBullet is not used as a support-contact substitute. The PyBullet hook raises until a real simulation integration is implemented.
+Accepted demos are generated by running strict evaluation attempts and copying
+only episodes that pass the success gates.
 
-The renderer may assign a default material only when an imported mesh has no material slots. That is not a geometry or asset substitute.
+```powershell
+python scripts/record_mujoco_demonstrations.py `
+  --run-dir runs/warehouse_gpt55_full_001 `
+  --target-object barcode_scanner_01 `
+  --eval-out outputs/lerobot_phase1/demo_rollouts/warehouse_scanner_v001 `
+  --demo-root data/lerobot_cache/raw_demos/warehouse_scanner_v001 `
+  --attempts 50 `
+  --min-accepted 5 `
+  --policy teacher_pick_place `
+  --visual-renderer none `
+  --render-rgb
+```
+
+An episode is accepted only if it succeeds, attempts and verifies a grasp, lifts
+the target, releases after grasp, places the target, avoids forbidden collisions,
+does not drop the object, and does not violate the workspace.
+
+## Exporting LeRobot Data
+
+Validate the export path without requiring LeRobot:
+
+```powershell
+python scripts/export_lerobot_dataset_from_mujoco.py `
+  --raw-demo-root data/lerobot_cache/raw_demos/warehouse_scanner_v001 `
+  --out data/lerobot_cache/datasets/warehouse_scanner_v001 `
+  --repo-id local/warehouse_scanner_v001 `
+  --fps 20 `
+  --canonical-only `
+  --overwrite
+```
+
+After installing LeRobot, write the real LeRobot dataset:
+
+```powershell
+python scripts/export_lerobot_dataset_from_mujoco.py `
+  --raw-demo-root data/lerobot_cache/raw_demos/warehouse_scanner_v001 `
+  --out data/lerobot_cache/datasets/warehouse_scanner_v001 `
+  --repo-id local/warehouse_scanner_v001 `
+  --fps 20 `
+  --overwrite
+```
+
+The export contains:
+
+- `observation.state`
+- `observation.images.overhead_rgb`
+- `observation.images.wrist_rgb`
+- `action`
+- `task`
+
+## ACT Training
+
+Once a real LeRobot dataset exists locally:
+
+```powershell
+python scripts/train_lerobot_policy.py `
+  --dataset-repo-id local/warehouse_scanner_v001 `
+  --local-dataset-path data/lerobot_cache/datasets/warehouse_scanner_v001 `
+  --output-dir outputs/lerobot_phase1/checkpoints/act_warehouse_scanner_v001 `
+  --job-name act_warehouse_scanner_v001 `
+  --device cuda
+```
+
+Dry-run the command construction first:
+
+```powershell
+python scripts/train_lerobot_policy.py `
+  --local-dataset-path data/lerobot_cache/datasets/warehouse_scanner_v001 `
+  --dry-run `
+  --extra-arg=--steps=10
+```
+
+Evaluate a trained policy back in MuJoCo:
+
+```powershell
+python scripts/evaluate_mujoco_scene.py `
+  --run-dir runs/warehouse_gpt55_full_001 `
+  --out outputs/lerobot_phase1/evals/act_warehouse_scanner_v001 `
+  --target-object barcode_scanner_01 `
+  --episodes 5 `
+  --policy lerobot `
+  --policy-path outputs/lerobot_phase1/checkpoints/act_warehouse_scanner_v001 `
+  --render-rgb `
+  --visual-renderer both
+```
+
+The first ACT run should be treated as a pipeline proof. A useful single-task
+policy will require more accepted demos and more object/pose variation than the
+small smoke dataset.
+
+## Rendering And Videos
+
+RGB training frames are produced by MuJoCo cameras configured in the SceneIR.
+MP4 debug videos are produced by MuJoCo offscreen rendering plus `imageio`.
+
+```powershell
+python scripts/evaluate_mujoco_scene.py `
+  --run-dir runs/warehouse_gpt55_full_001 `
+  --out outputs/lerobot_phase1/video_smoke `
+  --target-object barcode_scanner_01 `
+  --episodes 1 `
+  --policy teacher_pick_place `
+  --visual-renderer mujoco_debug `
+  --save-video
+```
+
+Use these videos for visual QA before scaling data collection.
+
+## Artifact Sync
+
+Large datasets and checkpoints should stay out of Git. The sync helper can push
+or pull artifacts through the configured backend:
+
+```powershell
+python scripts/sync_training_artifacts.py push-dataset --artifact-id warehouse_scanner_v001
+python scripts/sync_training_artifacts.py pull-checkpoint --artifact-id act_warehouse_scanner_v001
+```
+
+See [docs/lerobot_phase1_checkpoints.md](docs/lerobot_phase1_checkpoints.md)
+for the checkpoint workflow.
 
 ## Tests
 
+Base tests:
+
 ```powershell
-conda run -n scenethesis-faithful python -m pytest
+python -m pytest -q
 ```
 
-Tests do not call OpenAI. They cover schema validation, registry loading, prompt requirements, subtype contracts, strict resume validation, collision/layout rules, mesh/SDF-adjacent checks, and judge validation.
+Focused MuJoCo/LeRobot checks:
 
-## Limits
+```powershell
+python -m pytest -q tests/test_mujoco_bridge.py tests/test_lerobot_phase1.py tests/test_artifact_sync.py
+```
 
-Still not reproduced from the paper:
+Tests should not call OpenAI. Runtime-heavy generation and training are kept as
+explicit command-line workflows.
 
-- No large Objaverse-scale asset database.
-- No exact paper asset subset.
-- Depth pose refinement uses Depth Pro point-cloud boxes for conservative metric scale/yaw updates before the first SDF pass.
-- The joint pose optimizer combines Depth Pro graph targets and RoMa correspondence yaw targets with bounded SGD-style updates, but it is still simpler than the paper's full differentiable 2D/3D/SDF objective.
-- The SDF optimizer is local and practical for the laptop, but the paper ran experiments on A100-class hardware.
-- Warehouse asset quality depends on the current curated Poly Haven plus HF SimReady subset.
-- Multi-view judge/regeneration is implemented, but still smaller than the paper evaluation loop.
+## Repository Hygiene
 
-The next high-impact work is broader licensed asset acquisition, better object-aware composition policies, and moving the SDF signed-distance terms directly into the joint pose optimizer instead of running SDF as the hard validation/refinement stage after bounded pose updates.
+Committed files should be source code, configs, tests, small authored manifests,
+small documentation, and small representative thumbnails.
+
+Do not commit:
+
+- `.env`
+- model checkpoints
+- generated `runs/`
+- generated `outputs/`
+- local `data/` caches
+- compiled datasets
+- training checkpoints
+- Blender caches
+- raw frame dumps
+
+Keep reproducibility in scripts, configs, manifests, and docs rather than by
+checking in large generated artifacts.
+
+## Limitations
+
+Current limitations:
+
+- The asset database is curated and small compared with Objaverse-scale systems.
+- Scene generation quality depends strongly on the prompt, asset coverage, and
+  visual validation.
+- Gaussian splats or visual reconstructions still need a physics-ready geometry
+  conversion stage before robot use.
+- MuJoCo contact behavior depends on simplified collision meshes, masses,
+  friction, and solver parameters.
+- The deterministic Panda teacher is still candidate-search based and can be
+  expensive when many base/grasp options must be probed.
+- The current validated robot task is a controlled barcode-scanner pick-place
+  scenario, not a broad benchmark.
+- A small accepted demo set proves the data path, not a strong learned policy.
+
+The next high-impact work is to add a cheap strict regression gate, scale to 50+
+accepted RGB demos, install/export a real LeRobot dataset, run an ACT pilot,
+evaluate the learned policy separately from the teacher, and then introduce
+controlled variation in object pose, target placement, camera view, and layout.

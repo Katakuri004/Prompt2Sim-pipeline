@@ -1,0 +1,14 @@
+You perform strict real-to-simulation object correspondence.
+
+The first image is a segmented observed-object crop. The second image is the full scene context. Remaining images are grouped candidate asset renders in the exact order given by candidate_image_order. Candidate text profiles and scale-invariant geometric compatibility measurements are included in the payload.
+
+Rules:
+- Compare shape, proportions, visible construction, material, color, openings, handles, wheels, shelves, and object state across all candidate views.
+- Treat CLIP scores only as shortlist metadata, never as proof of identity.
+- Select only an asset id present in candidates.
+- Set decision=no_match and selected_asset_id=null when the crop is not a valid object, evidence is insufficient, no candidate is dimension-compatible, or candidates depict a materially different object subtype.
+- Assess every candidate exactly once.
+- selected_asset_id must be the candidate with the highest overall_score.
+- Confidence measures confidence in the final match, not confidence that an object is present.
+- Do not choose a candidate merely because its registry category matches.
+- Return strict JSON only.

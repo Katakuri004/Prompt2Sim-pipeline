@@ -1,33 +1,22 @@
 # Scenethesis MVP Technical Progress Report
 
-Date: 2026-06-16
+Date: 2026-06-23
 
 ## Current State
 
-The repo now has a strict paper-faithful path in addition to the original lightweight MVP path. The strict path is the one relevant to recreating Scenethesis.
+The repo has an original lightweight MVP path and a strict faithful path. The faithful path is the active implementation and now combines the Scenethesis scene pipeline with GRS-inspired visual asset correspondence.
 
-Current faithful command target:
+Current model configuration is `gpt-5.5` for planning, guidance validation, asset profiling/matching, and final vision judging, with `gpt-image-1` used only for guidance-image generation. There is no substitute OpenAI model path.
 
-```powershell
-conda run -n scenethesis-faithful python scripts/run_faithful.py --prompt "a busy warehouse storage and packing area with two steel storage shelves, many cardboard boxes, wooden crates, plastic crates, barrels, a hand truck, a metal trash can, a tool chest, a packing table, tools, a ladder, jerry cans, and a chair" --out runs/warehouse_faithful_rich_007 --repair-rounds 2
-```
+Current qualification status is deliberately stricter than the retained historical runs:
 
-Latest successful output directory:
+- `warehouse_asset_matched_final_001` is the first accepted current strict run through every gate (`guidance_validation.json`, segmentation/depth/graph coverage, `asset_correspondence.json`, SDF/mesh validation, RoMa/joint optimization, judge, and final qualification). It is intentionally constrained to assets already present in the local registry.
+- `warehouse_gpt55_full_001` was accepted under the previous pre-GRS rules with 33 objects and zero reported collision, floating, and unsupported counts. It is not accepted by the current validator because it predates guidance inventory validation and multimodal asset correspondence.
+- `warehouse_faithful_rich_007` is the strongest compact historical render, with 19 objects and clean pre-GRS geometry metrics.
+- `warehouse_no_clipping_patch_replay_003` is the strongest post-clipping render replay; Blender validation reports no visual support failures and no detected mesh overlap failures.
+- The latest strict GRS attempts stopped at guidance validation rather than continuing with incomplete images. This is a qualified failure, not pipeline success.
 
-```text
-runs/warehouse_faithful_rich_007
-```
-
-Latest validation summary:
-
-- 19 objects
-- 0 broad collision count from final metrics
-- 0 floating objects
-- 0 unsupported objects
-- SDF optimizer status: `ok`
-- Judge `needs_repair`: `false`
-- Final artifacts include `scene_spec.json`, `scene.glb`, `scene.usd`, `render.png`, `metrics.json`, `judge.json`, `repair_history.json`, and `report.md`
-- The judge gave prompt alignment `0.75` and noted imperfect visibility of some jerry cans/tools even though those objects exist in `scene_spec.json`.
+The current work is on branch `codex/fix-visible-clipping`. It includes the clipping, strict guidance, GRS retrieval, asset expansion, and qualification changes described in the latest addendum below; those changes are not yet merged into `main`.
 
 ## Implemented Method
 
@@ -129,13 +118,15 @@ Observed failure:
 
 Current config:
 
-- `OPENAI_VISION_MODEL` can override config.
-- `configs/scenethesis_faithful.yaml` sets the vision judge model to `gpt-4o`, which succeeded on the latest run.
+- `OPENAI_MODEL` and `OPENAI_VISION_MODEL` can override configuration explicitly.
+- `configs/scenethesis_faithful.yaml` sets both planner and vision work to `gpt-5.5`.
+- Model/API failure terminates the relevant stage; it does not switch to another model.
 
 ## Verified Runs
 
 Useful output:
 
+- `runs/warehouse_asset_matched_final_001` - accepted current strict run, 10 objects, asset-constrained prompt, no collisions, no floating objects, no unsupported objects.
 - `runs/warehouse_faithful_rich_007`
 
 Key artifacts in that run:
@@ -158,6 +149,35 @@ Key artifacts in that run:
 Known visual issue:
 
 - The current render is much richer than the earlier shelf/barrel/table screenshot, but it remains below the paper examples because the local asset database, occlusion-aware composition, and RoMa pose-alignment stage are still limited. This is an asset/data and pose-alignment problem more than a missing high-level pipeline stage at this point.
+
+## 2026-06-23 Addendum: Asset-Constrained End-To-End Verification
+
+Accepted verification run:
+
+- Run: `runs/warehouse_asset_matched_final_001`
+- Prompt was constrained to assets with known local meshes/profiles: `hf_pallet_rack_large_01`, `hf_wood_pallet_01`, `hf_forklift_orange_01`, `real_blue_barrel_03`, `authored_hazard_floor_marking_01`, `authored_x_braced_wooden_crate_01`, and `authored_clean_cardboard_box_01`.
+- Final qualification: `accepted=true`.
+- Object count: 10.
+- Metrics: `collision_count=0`, `floating_count=0`, `unsupported_count=0`, `total_penalty=0.0`.
+- Render validation: `visual_support_failure_count=0`, `visual_collision_failure_count=0`.
+- Asset correspondence: matched `10/10`, failed `0`.
+- GRS did one asset-aware guidance repair for `pallet_rack_01`, because the generated rack initially looked like a blue/orange loaded rack while the accessible mesh is the gray HF rack. The repair replaced the guidance rack with the exact local asset profile and then passed validation.
+- Final artifacts include `render.png`, `scene.glb`, `scene.usd`, `metrics.json`, `judge.json`, `qualification.json`, and `report.md`.
+
+Previous failure causes:
+
+- Several rejected runs asked for visual assets or subtypes that did not match the accessible mesh set closely enough. Example: validation rejected a generated open-cab dark blue/black forklift because the planned object expected a red enclosed forklift. This was not a missing-runtime issue; it was prompt/planner asset expectation not aligned with available meshes.
+- Dense warehouse prompts introduced bins, hand trucks, tables, barriers, ladders, and relation constraints that GPT image edits could not satisfy consistently under strict double validation. The image model would fix one object and regress another.
+- GRS correctly rejected crops when the guidance image object did not correspond to the selected mesh. Example: a generated pallet rack with blue uprights/orange beams was rejected against the gray HF rack profile.
+- Support-object segmentation initially let child geometry contaminate parent crops. Example: a pallet crop could include the crate sitting on it. This was fixed by allowing support parents to use the GPT-validated support bbox after DINO semantic verification (`gpt_support_bbox_groundingdino_verified`).
+- Repeated cardboard boxes were missed by full-frame DINO when it produced one merged box proposal. This was fixed by adding crop-conditioned DINO passes around each GPT-validated repeated-instance box before SAM.
+- Guidance revalidation exposed nondeterminism in the vision judge. Fresh guidance now requires two consecutive GPT-5.5 validations before the image can advance.
+
+Verification after fixes:
+
+- Focused tests for guidance validation, OpenAI image masks, faithful runtime, schema validation, repeated-instance segmentation helpers, and support-parent box selection passed before the accepted run.
+- The accepted run demonstrates that the strict faithful pipeline is functional when the prompt is scoped to accessible assets.
+- The practical next bottleneck is not a missing stage; it is asset-library coverage and prompt-to-asset alignment. Larger, paper-like warehouse prompts need more exact racks, forklifts, bins, barriers, hand trucks, and table variants before the strict GRS gate will accept them reliably.
 
 ## Test Coverage
 
@@ -468,3 +488,182 @@ Net-positive gate for merging:
 Remaining limitation:
 
 - This is a practical laptop-sized joint pose optimizer, not the full paper objective. SDF terms are still enforced by the following SDF/PyTorch3D stage rather than differentiated inside the joint pose loop.
+
+## 2026-06-22 Addendum: Clipping, GRS Correspondence, And Strict Guidance
+
+### Visible Clipping Investigation
+
+The post-joint-optimizer regression was caused by accepting lower local pose loss without enforcing a hard scene-geometry invariant. RoMa/depth updates could improve an object's alignment objective while moving it through another object or invalidating a support arrangement.
+
+Implemented corrections:
+
+- Anchor objects, support parents, and supported children are locked during the joint pose pass where moving them would invalidate an established support hierarchy.
+- Every proposed joint pose update is checked against the current scene AABBs. An update is rejected if it increases the collision count.
+- Warehouse rack staging now derives usable support capacity and deterministic shelf slots instead of overfilling metadata-declared levels.
+- Items exceeding actual rack capacity are placed as floor-supported overflow objects rather than forced onto nonexistent or occupied shelf space.
+- The SDF optimizer has a deterministic stall guard so repeated non-improving updates terminate with explicit diagnostics.
+- Blender final validation builds BVHs from the actual imported/rendered meshes and reports visual collisions independently from support failures.
+- `render_validation.json` and qualification now distinguish mesh overlap failures, visual support failures, and metric-level collision counts.
+
+Result:
+
+- `warehouse_no_clipping_patch_replay_003` completed the post-fix replay with clean Blender support validation and no detected visual mesh overlaps.
+- A fresh earlier full run exposed remaining box/rack overlap paths instead of being accepted. Those failures drove the support-capacity and update-veto changes.
+
+### Strict Guidance Inventory Gate
+
+Image generation is no longer treated as valid merely because an image file exists.
+
+Implemented:
+
+- Added strict Pydantic guidance-validation schemas in `schemas/guidance_validation.py`.
+- Added `configs/prompts/guidance_validation_system.txt`.
+- GPT-5.5 validates every planned object for presence, count, identity, subtype, visibility, framing, and whole-scene coherence.
+- Guidance generation retries up to the configured hard limit. A failed final attempt writes `guidance_validation.json`, raises, and prevents segmentation from starting.
+- Resume mode requires a valid `guidance_validation.json` with `ok=true`; stale image-only runs cannot resume through this stage.
+- Structural objects such as lights, doors, ducts, pipes, cables, and floor markings may touch a frame boundary only when still visible, identifiable, and semantically correct.
+
+Observed strict-run results:
+
+- `warehouse_grs_strict_001`: 20 planned objects; all three generated guidance images failed inventory validation with 11, 11, and 12 validation errors.
+- `warehouse_grs_strict_002`: planner was bounded to 17 objects; attempts failed with 3, 6, and 3 errors. The final image omitted the platform cart and toolbox and partially framed a light.
+- `warehouse_grs_strict_003`: manually aborted before completion and was removed during output cleanup.
+
+These runs were not counted as successful and did not proceed to segmentation, depth, or rendering.
+
+### GRS-Style Multiview Asset Correspondence
+
+The previous direct CLIP top-1 assignment was not strong enough to claim visual asset correspondence. The current implementation separates coarse retrieval from final matching.
+
+Implemented flow:
+
+1. Local OpenCLIP embeds the real segmentation crop and creates a category-constrained top-k shortlist.
+2. Blender renders deterministic orthographic `front`, `side`, and `oblique` views for each candidate asset.
+3. GPT-5.5 creates a reusable visual profile from those views, including visible geometry, proportions, subtype cues, and limitations. Profiles may not invent invisible properties.
+4. GPT-5.5 receives the object crop, full guidance image, scene/graph dimensions, candidate profiles, and all candidate views.
+5. The model must assess every shortlisted candidate and return an explicit decision or `no_match`.
+6. The result is rejected on low confidence, insufficient first/second score margin, dimension incompatibility, excessive 3D shape error, incomplete candidate coverage, or candidate-id mismatch.
+7. `asset_correspondence.json` records all object decisions. Any failed object prevents qualification.
+
+New modules and artifacts:
+
+- `schemas/asset_correspondence.py`: strict profile, shortlist, assessment, decision, and report schemas.
+- `assets/visual_profiles.py`: profile cache validation, deterministic view generation, and GPT-5.5 profile calls.
+- `assets/grs_retriever.py`: shortlist orchestration and strict multimodal final matching.
+- `scripts/build_asset_visual_profiles.py`: controlled per-id/per-category profile creation; no accidental bulk API use.
+- `asset_views/<asset_id>/{front,side,oblique}.png` and `profiles/<asset_id>.json`: ignored reusable local caches.
+
+The obsolete `ClipAssetRetriever.retrieve()` final-assignment method was removed. CLIP can now only return a shortlist in the faithful implementation.
+
+Real integration result:
+
+- A rack crop matched `real_warehouse_shelf_02` with confidence `0.82` and margin `0.78`.
+- A malformed/partial pallet-jack crop correctly returned `no_match` when the shortlist contained stacker/forklift assets. The run stopped instead of assigning the nearest incorrect mesh.
+
+### Asset Registry Expansion
+
+Current warehouse registry state:
+
+- 79 registered assets across 29 categories.
+- 13 controlled HF SimReady imports with recorded source and license metadata, plus one reproducible attributed derivative.
+- Three forklift-family assets are available: compact walk-behind stacker, red forklift, and blue forklift.
+- Added red and blue NVIDIA PhysicalAI SimReady forklift declarations and imported their GLBs.
+- Corrected the previous orange asset metadata from a generic orange forklift to a compact walk-behind electric pallet stacker.
+- Rebuilt the warehouse CLIP index against the expanded mesh/thumbnail registry.
+
+The importer remains manifest-controlled and downloads only declared assets and declared USD dependencies. There is no bulk Objaverse or Hugging Face clone.
+
+### Qualification And Failure Semantics
+
+Current acceptance requires:
+
+- Strict guidance validation.
+- Complete segmentation and depth/graph coverage.
+- Complete multimodal asset correspondence with zero failed objects.
+- Successful depth pose, SDF, RoMa, and joint pose diagnostics.
+- Zero disallowed mesh collisions and visual support failures.
+- Valid judge output and repair completion.
+- Required final scene, render, metric, report, and qualification artifacts.
+
+`pipeline_diagnostics.json`, `qualification.json`, and `validate_outputs.py` no longer infer success from a render or from missing diagnostic fields. A failed stage writes explicit failure/qualification information and exits non-zero.
+
+### Retained Output Runs
+
+Output cleanup reduced `runs/` from 77 directories and 9.53 GB to 3 directories and 0.90 GB. The retained runs are:
+
+- `warehouse_faithful_rich_007`: strongest compact historical visual, 19 objects, clean pre-GRS metrics.
+- `warehouse_gpt55_full_001`: complete historical GPT-5.5 run, 33 objects, accepted under pre-GRS qualification with zero reported collision/floating/unsupported counts.
+- `warehouse_no_clipping_patch_replay_003`: post-clipping Blender render and geometry/support validation replay.
+
+All smoke tests, superseded renders, runtime checks, aborted runs, and unqualified strict attempts were removed. Their important failure findings are preserved in this report.
+
+### Current Verification And Remaining Gaps
+
+Current automated suite: 59 tests passing. Tests are offline and do not convert unavailable API/runtime dependencies into success.
+
+Still required for a true current-generation accepted run:
+
+- Produce a guidance image that passes exact inventory validation for a bounded, visually reasonable warehouse object set.
+- Complete strict GRS matching for every segmented object; the registry still needs more visually distinct alternatives for carts, pallet jacks, racks, tools, and warehouse containers.
+- Run the full strict pipeline through segmentation, Depth Pro, graph construction, SDF, RoMa/joint pose, Blender, GPT-5.5 judge, and final qualification.
+- Compare the new accepted render against the retained visual baselines before merging the branch.
+- Integrate robotic task proposal, executable success predicates, oracle validation, and simulation/test routing from GRS. Those task-generation concepts are not yet implemented.
+
+### Guidance Contract Correction Implemented
+
+The next-run guidance contract was tightened without permitting partial downstream coverage:
+
+- Faithful planning is capped at 12 independently segmentable objects.
+- Generic warehouse context now requests a renderable core: rack, table, forklift/stacker, pallet, safety barrier, floor marking, and two boxes. Lights, doors, utilities, and other props are included only when explicitly requested.
+- Pallet-stacker language maps to the forklift asset family for retrieval while preserving subtype text for final multimodal matching.
+- The guidance prompt states the exact object count, forbids unplanned movable props, and lists every binary relation separately.
+- GPT-5.5 must return exact relation coverage in addition to exact object coverage. Unsatisfied support, directional, near, or facing relations fail validation.
+- Attempt one uses `gpt-image-1` generation. Later attempts use the previous rejected image as a high-fidelity image-edit input and must preserve already valid objects, camera, lighting, scale, support, and relations.
+- Failure of the required image-edit call stops guidance generation. There is no unrelated regeneration or alternate model route.
+
+Offline verification after this change: 61 tests passing.
+
+## 2026-06-26 Addendum: Real Panda MuJoCo Bridge And LeRobot Phase 1 Status
+
+Implemented in the MuJoCo/LeRobot branch:
+
+- Replaced the local simplified Panda proxy with the Google DeepMind MuJoCo Menagerie Franka Emika Panda MJCF and mesh assets under `models/robots/panda/`.
+- Kept the Menagerie kinematics, inertias, collision geoms, meshes, tendon gripper, and actuator layout intact.
+- Added only Scenethesis-specific hooks to the vendored Panda model:
+  - `panda_gripper_site` on the `hand` body for IK, sensors, and task metrics.
+  - `wrist_rgb` camera on the `hand` body for LeRobot image observations.
+- Updated `configs/mujoco_eval.yaml` to the real Panda model contract:
+  - arm joints: `joint1` through `joint7`;
+  - gripper joints: `finger_joint1`, `finger_joint2`;
+  - actuators: `actuator1` through `actuator8`;
+  - action traces are now 8D for the real Panda: seven arm controls plus the single tendon gripper actuator.
+- Reworked MJCF composition so the warehouse scene imports/merges the Panda MJCF instead of synthesizing inline capsule/box robot bodies.
+- Updated the controller adapter to discover joint-backed and tendon-backed actuators from the compiled MuJoCo model rather than relying on `_act` name suffixes.
+- Updated MuJoCo environment contact, trace, gripper, and dense-state logic to handle both legacy proxy names and real Menagerie Panda body names.
+- Updated task feasibility IK, destination scoring, base placement, and teacher waypoint heights for the real Panda workspace.
+- Updated LeRobot dataset export validation to accept either 8D real-Panda actuator traces or legacy 9D proxy traces.
+
+Verification:
+
+- `outputs/lerobot_phase1/real_panda_compile_check` compiles the `warehouse_gpt55_full_001` scene with the real Panda.
+- Compile report for the real-Panda scene: `nq=16`, `nv=15`, `nu=8`.
+- The compiled model exposes actuators `actuator1` through `actuator8`, confirming that the Menagerie tendon-gripper model is loaded rather than the old proxy.
+- One warehouse teacher rollout runs end-to-end at `outputs/lerobot_phase1/real_panda_teacher_smoke`.
+- Task feasibility now passes for `barcode_scanner_01` on `packing_table_01`: target and destination are reachable, all compiled IK waypoints solve, and the checked waypoint path is collision-free.
+- Focused verification suite passes: `18 passed` for `tests/test_mujoco_bridge.py`, `tests/test_lerobot_phase1.py`, and `tests/test_artifact_sync.py`.
+
+Current blocker:
+
+- Policy success is still `false`.
+- The latest real-Panda teacher episode imports and runs, but terminates as a policy failure before task success.
+- Task feasibility passes and the teacher reaches the close/grasp region, but the trace shows the scanner is not lifted: `grasp_attempted=true`, `target_lifted=false`, `released_after_grasp=false`.
+- The current grasp gate is too weak for successful data generation: transient finger contact can latch `verified_grasp` without proving a sustained physical grasp that survives lift.
+- Physics settling is nearly stable but still slightly outside the strict drift gate: target drift is about `0.002017 m` against the current `0.002000 m` limit, with low contact force after switching to a collision-free ready pose.
+
+Interpretation:
+
+- The remaining failure is no longer caused by a fake or simplified robot model.
+- The bridge now uses the real Panda model and reaches the strict import/task-feasibility stage.
+- The next required fix is controller/contact tuning for the scanner grasp: persistent two-finger contact tracking, stable grasp validation, staged lift behavior, scanner support settling, and bad-contact gating must be corrected before successful demos are recorded or exported to LeRobot.
+
+Do not record or export LeRobot Phase 1 demos until the teacher produces strict accepted episodes with verified grasp, lift, release, stable placement, no drop, no workspace violation, and no bad collision.

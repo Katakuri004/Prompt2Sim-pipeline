@@ -25,8 +25,24 @@ def test_pipeline_diagnostics_reports_stage_coverage(tmp_path: Path) -> None:
             image_width=8,
             image_height=8,
             detections=[
-                DetectionSpec(object_id="shelf_01", phrase="shelf", score=0.9, box_xyxy=[0, 0, 4, 4], mask_path="shelf.png", mask_area=16),
-                DetectionSpec(object_id="box_01", phrase="box", score=0.9, box_xyxy=[4, 4, 8, 8], mask_path="box.png", mask_area=16),
+                DetectionSpec(
+                    object_id="shelf_01",
+                    phrase="shelf",
+                    score=0.9,
+                    box_xyxy=[0, 0, 4, 4],
+                    dino_box_xyxy=[0, 0, 4, 4],
+                    mask_path="shelf.png",
+                    mask_area=16,
+                ),
+                DetectionSpec(
+                    object_id="box_01",
+                    phrase="box",
+                    score=0.9,
+                    box_xyxy=[4, 4, 8, 8],
+                    dino_box_xyxy=[4, 4, 8, 8],
+                    mask_path="box.png",
+                    mask_area=16,
+                ),
             ],
         ),
     )
@@ -47,6 +63,19 @@ def test_pipeline_diagnostics_reports_stage_coverage(tmp_path: Path) -> None:
     write_json(tmp_path / "sdf_optimizer.json", {"status": "ok", "objects": [{"object_id": "shelf_01", "status": "ok"}, {"object_id": "box_01", "status": "ok"}]})
     write_json(tmp_path / "render_validation.json", {"ok": True, "visual_support_failure_count": 0})
     write_json(tmp_path / "correspondence_diagnostics.json", {"ok": True, "failed_object_count": 0})
+    write_json(
+        tmp_path / "asset_correspondence.json",
+        {
+            "ok": True,
+            "provider": "openai_multiview_asset_correspondence",
+            "matched_object_count": 2,
+            "failed_object_count": 0,
+        },
+    )
+    write_json(
+        tmp_path / "guidance_validation.json",
+        {"ok": True, "provider": "openai_vision_guidance_inventory", "attempts": [{}]},
+    )
     write_json(tmp_path / "depth_pose_refinement.json", {"ok": True, "applied_scale_updates": 1, "applied_yaw_updates": 1})
     write_json(
         tmp_path / "joint_pose_optimizer.json",
@@ -63,5 +92,6 @@ def test_pipeline_diagnostics_reports_stage_coverage(tmp_path: Path) -> None:
     assert diagnostics["ok"] is True
     assert diagnostics["summary"]["segmentation_detection_count"] == 2
     assert diagnostics["summary"]["scene_graph_pointcloud_count"] == 2
+    assert diagnostics["summary"]["asset_correspondence_matched_count"] == 2
     assert diagnostics["summary"]["depth_pose_scale_updates"] == 1
     assert diagnostics["summary"]["joint_pose_final_loss"] == 0.5

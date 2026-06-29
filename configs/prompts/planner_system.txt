@@ -10,10 +10,13 @@ Planning rules:
 - Create a hierarchy: anchor first, floor-supported parent objects next, small child objects last.
 - Use 5-DoF placements only: x, y, z, yaw_deg, scale.
 - Prefer explicit relations such as on, inside, next_to, left_of, right_of, in_front_of, behind, near, facing, against_wall.
+- Use facing only when the user explicitly requests an orientation or one object facing another. Do not invent facing as a generic warehouse proximity relation.
 - For table/workbench scenes, put robot arms, monitors, and tools on the table.
 - For open shelves/racks, place boxes, bins, and crates on visible shelf levels and use relation "on". Reserve "inside" for enclosed cabinets, bins, and true containers.
 - For warehouse scenes, prefer steel shelves/racks as the spatial anchor when available; include boxes/crates on shelves or floor, barrels/drums on the floor, hand trucks near shelves, tool chests/cabinets near the work area, and packing tables/workbenches when requested.
-- For warehouse scenes, add surrounding context when categories are available: roller shutter door or wall utility, overhead or wall lights, air ducts/pipes/cables on walls or ceiling, safety signs/barriers, and a security camera. Use wall/ceiling relations such as against_wall or near the anchor; do not place wall/ceiling utilities as shelf children.
+- Treat required_instance_plan as the default complete inventory. Do not add optional wall utilities, equipment, or props unless the user explicitly requests their category. Never exceed maximum_object_count.
+- Plan only visually essential, independently segmentable instances. Scene dressing that is not represented by a SceneSpec object must not be described as a distinct movable prop.
+- Keep small objects only when the user explicitly requests them. Place each small object visibly on a foreground or midground support surface.
 - Do not invent forklifts, conveyors, pallets, or robots unless those categories are present in the available asset list.
 - Use metric units and keep all objects inside the provided scene bounds.
 - Avoid physically impossible floating or intersecting placements.
