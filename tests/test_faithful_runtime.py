@@ -10,7 +10,12 @@ from PIL import Image
 from scenethesis_mvp.assets.clip_index import ClipAssetRetriever, ClipIndexConfig
 from scenethesis_mvp.assets.registry import AssetRegistry
 from scenethesis_mvp.optimization.sdf_optimizer import MeshTemplate, PlacedMesh, SDFOptimizerConfig, SDFPhysicsOptimizer
-from scenethesis_mvp.pipeline.run_faithful_pipeline import load_existing_faithful_artifacts, validate_resume_artifacts
+from scenethesis_mvp.pipeline.run_faithful_pipeline import (
+    apply_existing_asset_correspondence,
+    load_asset_repair_state,
+    load_existing_faithful_artifacts,
+    validate_resume_artifacts,
+)
 from scenethesis_mvp.runtime.faithful import validate_faithful_runtime
 from scenethesis_mvp.schemas.depth import CameraIntrinsics, DepthResult
 from scenethesis_mvp.schemas.scene_spec import ObjectSpec, PlacementSpec, SceneSpec
@@ -20,6 +25,105 @@ from scenethesis_mvp.vision.depth_pose_refinement import apply_depth_pose_refine
 from scenethesis_mvp.vision.grounded_sam import GroundedSAMConfig, GroundedSAMSegmenter
 from scenethesis_mvp.vision.image_guidance import ImageGuidanceResult
 from scenethesis_mvp.vision.pointcloud import build_pointcloud_scene_graph
+
+
+def test_asset_guidance_repair_state_preserves_attempts_and_sequence(tmp_path: Path) -> None:
+    (tmp_path / "guidance_asset_repairs.json").write_text(
+        json.dumps(
+            {
+                "repairs": [
+                    {
+                        "repair_index": 2,
+                        "object_id": "table_01",
+                        "target_asset_id": "table_asset_01",
+                    },
+                    {
+                        "repair_index": 5,
+                        "object_id": "barrier_01",
+                        "target_asset_id": "barrier_asset_01",
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    attempted, highest_index = load_asset_repair_state(tmp_path)
+
+    assert attempted == {
+        ("table_01", "table_asset_01"),
+        ("barrier_01", "barrier_asset_01"),
+    }
+    assert highest_index == 5
+
+
+def test_asset_correspondence_resume_requires_exact_fresh_success_report(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    registry = AssetRegistry.from_yaml(root / "configs" / "warehouse_asset_registry.yaml")
+    scene = SceneSpec(
+        prompt="box",
+        objects=[ObjectSpec(id="box_01", category="box", role="anchor")],
+    )
+    inputs = [tmp_path / name for name in ("coarse.json", "guidance.png", "segmentation.json", "index.npz")]
+    for path in inputs:
+        path.write_bytes(b"input")
+    report = tmp_path / "asset_correspondence.json"
+    report.write_text(
+        json.dumps(
+            {
+                "ok": True,
+                "provider": "openai_multiview_asset_correspondence",
+                "objects": [
+                    {
+                        "object_id": "box_01",
+                        "status": "matched",
+                        "selected_asset_id": "authored_clean_cardboard_box_01",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    class ProfileStore:
+        def ensure_profiles(self, asset_ids: list[str], _registry: AssetRegistry) -> dict[str, object]:
+            assert asset_ids == ["authored_clean_cardboard_box_01"]
+            return {}
+
+    resumed = apply_existing_asset_correspondence(
+        scene,
+        report,
+        inputs,
+        registry,
+        ProfileStore(),  # type: ignore[arg-type]
+    )
+
+    assert resumed.object_by_id("box_01").asset_id == "authored_clean_cardboard_box_01"
+
+
+def test_asset_correspondence_resume_rejects_stale_report(tmp_path: Path) -> None:
+    report = tmp_path / "asset_correspondence.json"
+    report.write_text(
+        json.dumps({"ok": True, "provider": "openai_multiview_asset_correspondence", "objects": []}),
+        encoding="utf-8",
+    )
+    newer_input = tmp_path / "segmentation.json"
+    newer_input.write_bytes(b"newer")
+    report_time = report.stat().st_mtime_ns
+    newer_time = report_time + 2_000_000_000
+    newer_input.touch()
+    import os
+
+    os.utime(newer_input, ns=(newer_time, newer_time))
+
+    with pytest.raises(RuntimeError, match="older than its inputs"):
+        apply_existing_asset_correspondence(
+            SceneSpec(prompt="box", objects=[ObjectSpec(id="box_01", category="box", role="anchor")]),
+            report,
+            [newer_input],
+            AssetRegistry.from_yaml(Path(__file__).resolve().parents[1] / "configs" / "warehouse_asset_registry.yaml"),
+            object(),  # type: ignore[arg-type]
+        )
 
 
 def test_faithful_runtime_rejects_substitutes(tmp_path: Path) -> None:
@@ -33,6 +137,40 @@ def test_faithful_runtime_rejects_substitutes(tmp_path: Path) -> None:
     report = validate_faithful_runtime(config, tmp_path)
     assert report.ok is False
     assert any("allow_substitutes" in error for error in report.errors)
+
+
+def test_faithful_runtime_rejects_unbounded_or_regenerative_guidance(tmp_path: Path) -> None:
+    config = {
+        "paper_faithful": {"enabled": True, "allow_substitutes": False, "min_free_disk_gb": 0},
+        "scene": {"max_objects": 18},
+        "image_guidance": {"max_validation_attempts": 3, "correction_mode": "regenerate"},
+        "render": {},
+        "segmentation": {},
+        "depth": {},
+        "asset_retrieval": {},
+    }
+
+    report = validate_faithful_runtime(config, tmp_path)
+
+    assert any("image_guidance.correction_mode" in error for error in report.errors)
+    assert any("scene.max_objects" in error for error in report.errors)
+
+
+def test_faithful_runtime_accepts_bounded_sixteen_object_guidance(tmp_path: Path) -> None:
+    config = {
+        "paper_faithful": {"enabled": True, "allow_substitutes": False, "min_free_disk_gb": 0},
+        "scene": {"max_objects": 16},
+        "image_guidance": {"max_validation_attempts": 4, "correction_mode": "edit_high_fidelity"},
+        "render": {},
+        "segmentation": {},
+        "depth": {},
+        "asset_retrieval": {"guidance_repair_rounds": 2},
+    }
+
+    report = validate_faithful_runtime(config, tmp_path)
+
+    scene_check = next(check for check in report.checks if check.name == "scene.max_objects")
+    assert scene_check.ok is True
 
 
 def test_faithful_resume_requires_saved_artifacts(tmp_path: Path) -> None:
@@ -51,7 +189,13 @@ def test_faithful_resume_rejects_missing_crop(tmp_path: Path) -> None:
     Image.new("L", (8, 8), 128).save(preview_path)
 
     scene = SceneSpec(prompt="warehouse", objects=[ObjectSpec(id="box", category="box", role="anchor")])
-    guidance = ImageGuidanceResult(guidance_path=guidance_path, image_metadata={}, upsampled_prompt="", candidates=[])
+    guidance = ImageGuidanceResult(
+        guidance_path=guidance_path,
+        image_metadata={},
+        upsampled_prompt="",
+        candidates=[],
+        object_boxes={"box": [0.0, 0.0, 1.0, 1.0]},
+    )
     segmentation = SegmentationResult(
         image_path=str(guidance_path),
         image_width=8,
@@ -62,6 +206,7 @@ def test_faithful_resume_rejects_missing_crop(tmp_path: Path) -> None:
                 phrase="box",
                 score=0.9,
                 box_xyxy=[0, 0, 8, 8],
+                dino_box_xyxy=[0, 0, 8, 8],
                 mask_path=str(mask_path),
                 crop_path=str(tmp_path / "missing_crop.png"),
                 mask_area=64,
@@ -113,6 +258,7 @@ def test_mask_depth_projection_writes_pointcloud_graph(tmp_path: Path) -> None:
                 phrase="box",
                 score=0.9,
                 box_xyxy=[2, 2, 6, 6],
+                dino_box_xyxy=[2, 2, 6, 6],
                 mask_path=str(mask_path),
                 crop_path=None,
                 mask_area=16,
@@ -211,10 +357,12 @@ def test_clip_retriever_fails_when_index_missing(tmp_path: Path) -> None:
     )
     retriever = ClipAssetRetriever(ClipIndexConfig(index_path=tmp_path / "missing_index.npz"))
     with pytest.raises(RuntimeError, match="CLIP asset index is missing"):
-        retriever.retrieve(scene, segmentation, registry, tmp_path)
+        retriever.shortlist(scene, segmentation, registry, tmp_path)
 
 
 def test_sdf_optimizer_does_not_downgrade_to_mesh_proxy(tmp_path: Path) -> None:
+    pytest.importorskip("pytorch3d")
+    pytest.importorskip("pytorch3d._C")
     root = Path(__file__).resolve().parents[1]
     registry = AssetRegistry.from_yaml(root / "configs" / "warehouse_asset_registry.yaml")
     scene = SceneSpec(
@@ -324,6 +472,8 @@ def test_sdf_support_target_prefers_mesh_planes_over_registry_heights() -> None:
 
 
 def test_sdf_optimizer_accepts_ceiling_mounted_assets(tmp_path: Path) -> None:
+    pytest.importorskip("pytorch3d")
+    pytest.importorskip("pytorch3d._C")
     root = Path(__file__).resolve().parents[1]
     registry = AssetRegistry.from_yaml(root / "configs" / "warehouse_asset_registry.yaml")
     scene = SceneSpec(

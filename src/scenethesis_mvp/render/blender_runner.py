@@ -73,10 +73,10 @@ def render_scene(
         if not validation.get("ok", False):
             failures = validation.get("failures", [])
             details = "; ".join(
-                f"{item.get('object_id')} error={item.get('error_m', 'n/a')}"
+                f"{item.get('object_id') or item.get('object_a')} error={item.get('error_m', item.get('reason', 'n/a'))}"
                 for item in failures[:8]
             )
-            raise RuntimeError(f"Blender visual support validation failed: {details}")
+            raise RuntimeError(f"Blender visual validation failed: {details}")
         if not (target_dir / "render.png").is_file() or not (target_dir / "scene.glb").is_file():
             raise RuntimeError("Blender finished without required render.png and scene.glb outputs.")
         views_path = target_dir / "render_views.json"

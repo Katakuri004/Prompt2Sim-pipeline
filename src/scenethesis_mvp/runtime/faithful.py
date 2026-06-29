@@ -54,6 +54,27 @@ def validate_faithful_runtime(
     )
     checks.append(
         _check_bool(
+            "image_guidance.max_validation_attempts",
+            int(config.get("image_guidance", {}).get("max_validation_attempts", 0)) >= 1,
+            "strict guidance inventory validation requires at least one attempt",
+        )
+    )
+    checks.append(
+        _check_bool(
+            "image_guidance.correction_mode",
+            config.get("image_guidance", {}).get("correction_mode") == "edit_high_fidelity",
+            "strict guidance correction requires edit_high_fidelity",
+        )
+    )
+    checks.append(
+        _check_bool(
+            "scene.max_objects",
+            6 <= int(config.get("scene", {}).get("max_objects", 0)) <= 16,
+            "faithful single-image guidance requires scene.max_objects between 6 and 16",
+        )
+    )
+    checks.append(
+        _check_bool(
             "paper_faithful.allow_substitutes",
             faithful_cfg.get("allow_substitutes", True) is False,
             "allow_substitutes must be false; replacement components are not allowed",
@@ -62,6 +83,28 @@ def validate_faithful_runtime(
     checks.append(_check_python_version())
     checks.append(_check_openai())
     checks.append(_check_blender(config.get("render", {})))
+    retrieval_cfg = config.get("asset_retrieval", {})
+    checks.append(
+        _check_bool(
+            "asset_retrieval.provider",
+            retrieval_cfg.get("provider") == "grs_multiview_vlm",
+            "faithful runs require grs_multiview_vlm; CLIP-only asset selection is not allowed",
+        )
+    )
+    checks.append(
+        _check_bool(
+            "asset_retrieval.top_k",
+            int(retrieval_cfg.get("top_k", 0)) >= 2,
+            "multimodal asset correspondence requires top_k >= 2",
+        )
+    )
+    checks.append(
+        _check_bool(
+            "asset_retrieval.guidance_repair_rounds",
+            1 <= int(retrieval_cfg.get("guidance_repair_rounds", 0)) <= 3,
+            "asset-aware guidance repair requires between 1 and 3 bounded rounds",
+        )
+    )
     checks.append(_check_nvidia_smi())
     if check_disk:
         checks.append(_check_free_disk(root, float(faithful_cfg.get("min_free_disk_gb", 15))))
@@ -227,6 +270,9 @@ def _check_configured_files(config: dict[str, Any], root: Path) -> list[RuntimeC
         ("depth.repo_dir", config.get("depth", {}).get("repo_dir")),
         ("depth.checkpoint_dir", config.get("depth", {}).get("checkpoint_dir")),
         ("asset_retrieval.index_path", config.get("asset_retrieval", {}).get("index_path")),
+        ("paths.asset_profile_prompt", config.get("paths", {}).get("asset_profile_prompt")),
+        ("paths.asset_match_prompt", config.get("paths", {}).get("asset_match_prompt")),
+        ("paths.guidance_validation_prompt", config.get("paths", {}).get("guidance_validation_prompt")),
     ]
     correspondence_cfg = config.get("correspondence", {})
     if correspondence_cfg.get("enabled", False):

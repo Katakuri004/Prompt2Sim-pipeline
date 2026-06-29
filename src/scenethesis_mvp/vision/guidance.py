@@ -139,20 +139,54 @@ class VisionGuidance:
 
 def build_guidance_prompt(prompt: str, scene: SceneSpec, registry: AssetRegistry) -> str:
     object_lines = []
-    for obj in scene.objects:
-        asset_name = registry.get(obj.asset_id).name if obj.asset_id else (obj.name or obj.category)
-        relation = "anchor" if obj.role == "anchor" else (f"{obj.relation} {obj.parent_id}" if obj.parent_id else obj.relation)
-        object_lines.append(f"- {obj.id}: {asset_name}, category {obj.category}, {relation}")
+    relation_lines = []
+    constraints = {constraint.subject_id: constraint for constraint in scene.constraints}
+    role_order = {"anchor": 0, "parent": 1, "child": 2}
+    ordered_objects = sorted(scene.objects, key=lambda obj: (role_order[obj.role], obj.id))
+    for obj in ordered_objects:
+        asset = registry.get(obj.asset_id) if obj.asset_id else None
+        asset_name = asset.name if asset else (obj.name or obj.category)
+        description = f", description: {obj.description}" if obj.description else ""
+        dimensions = f"; dimensions_m={asset.dimensions}" if asset else ""
+        visual_traits = guidance_visual_traits(asset.tags) if asset else []
+        traits = f"; exact_visual_traits={visual_traits}" if visual_traits else ""
+        object_lines.append(
+            f"- {obj.id}: {asset_name}; category={obj.category}; role={obj.role}"
+            f"{dimensions}{traits}{description}"
+        )
+        if obj.role != "anchor" and obj.relation:
+            constraint = constraints.get(obj.id)
+            target_id = obj.parent_id or (constraint.target_id if constraint else None)
+            if not target_id:
+                raise RuntimeError(f"Guidance prompt relation for {obj.id} has no target object.")
+            relation_lines.append(f"- {obj.id} must be clearly {obj.relation} {target_id}")
     return (
-        "Create a realistic single wide-angle reference image for a 3D scene layout. "
-        "Use a three-quarter camera view with visible floor contact, clear object separation, and no text labels. "
-        "The image is guidance for extracting spatial relations, so every planned object below must be fully visible, "
-        "inside the frame, unhidden, and separated enough for object segmentation. Do not crop required objects at the image edge. "
-        "For repeated categories, show separate visible instances. Show hand trucks/dollies and barrels/drums as recognizable warehouse objects.\n\n"
+        "Create one realistic landscape warehouse reference image for 3D scene reconstruction. "
+        "Use a wide three-quarter camera with generous margin on every edge, visible floor contact, realistic indoor scale, "
+        "and clear separation between objects. The exact inventory count is mandatory. Do not add other distinct movable props. "
+        "Every listed instance must be visible, identifiable, unmerged, and large enough for segmentation and asset matching. "
+        "Keep floor objects fully in frame. Keep small supported objects in the foreground or midground and unobstructed. "
+        "Repeated categories must appear as separate instances, not as a pile or fused group. Do not add text labels.\n\n"
         f"User prompt: {prompt}\n\n"
-        "Planned objects and coarse relations:\n"
+        f"Exact planned inventory ({len(scene.objects)} objects):\n"
         + "\n".join(object_lines)
+        + "\n\nRequired visible relations:\n"
+        + ("\n".join(relation_lines) if relation_lines else "- The single anchor has no binary relation.")
     )
+
+
+def guidance_visual_traits(tags: list[str]) -> list[str]:
+    generic = {
+        "warehouse",
+        "industrial",
+        "floor",
+        "child",
+        "parent",
+        "anchor",
+        "real",
+        "asset",
+    }
+    return [tag for tag in tags if tag.lower() not in generic]
 
 
 def build_retrieval_candidates(scene: SceneSpec, registry: AssetRegistry) -> list[dict[str, Any]]:

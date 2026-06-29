@@ -7,6 +7,7 @@ from typing import Any
 import numpy as np
 
 from scenethesis_mvp.assets.registry import AssetRegistry
+from scenethesis_mvp.layout.collision import detect_collisions
 from scenethesis_mvp.layout.stability import mounted_support_kind, snap_all_to_support
 from scenethesis_mvp.schemas.scene_graph_3d import SceneGraph3D
 from scenethesis_mvp.schemas.scene_spec import ObjectSpec, SceneSpec
@@ -31,6 +32,7 @@ class JointPoseOptimizerConfig:
     depth_yaw_weight: float = 0.45
     roma_yaw_weight: float = 0.65
     movable_scene_margin_fraction: float = 0.14
+    lock_structural_supports: bool = True
 
 
 @dataclass(frozen=True)
@@ -88,6 +90,7 @@ def run_joint_pose_optimizer(
         changed = False
         for obj in updated.objects:
             before_loss = object_loss(obj, targets[obj.id], registry, config)
+            before_collision_penalty = collision_penalty(updated, registry)
             proposal = propose_object_update(obj, targets[obj.id], updated, registry, config)
             if not proposal["has_update"]:
                 continue
@@ -98,13 +101,19 @@ def run_joint_pose_optimizer(
             candidate = snap_all_to_support(candidate, registry)
             candidate_obj = candidate.object_by_id(obj.id)
             after_loss = object_loss(candidate_obj, targets[obj.id], registry, config)
+            after_collision_penalty = collision_penalty(candidate, registry)
             event = {
                 "object_id": obj.id,
                 "loss_before": round(before_loss["total_loss"], 8),
                 "loss_after": round(after_loss["total_loss"], 8),
+                "collision_penalty_before": round(before_collision_penalty, 8),
+                "collision_penalty_after": round(after_collision_penalty, 8),
                 "proposal": proposal,
             }
-            if after_loss["total_loss"] <= before_loss["total_loss"] - 1e-9:
+            if (
+                after_loss["total_loss"] <= before_loss["total_loss"] - 1e-9
+                and after_collision_penalty <= before_collision_penalty + 1e-9
+            ):
                 updated = candidate
                 obj = updated.object_by_id(obj.id)
                 changed = True
@@ -114,6 +123,8 @@ def run_joint_pose_optimizer(
                 object_records[obj.id]["accepted_updates"].append(event)
                 event["accepted"] = True
             else:
+                if after_collision_penalty > before_collision_penalty + 1e-9:
+                    event["reject_reason"] = "collision_penalty_increase"
                 object_records[obj.id]["rejected_updates"].append(event)
                 event["accepted"] = False
             iteration_record["objects"].append(event)
@@ -246,7 +257,7 @@ def depth_xy_targets(
     config: JointPoseOptimizerConfig,
 ) -> dict[str, tuple[float, float]]:
     poses = {pose.object_id: pose for pose in graph.poses}
-    movable = [obj for obj in scene.objects if obj.id in poses and can_translate_xy(obj, scene, registry)]
+    movable = [obj for obj in scene.objects if obj.id in poses and can_translate_xy(obj, scene, registry, config)]
     if len(movable) < 2:
         return {}
     graph_x = np.asarray([poses[obj.id].x for obj in movable], dtype=np.float64)
@@ -268,12 +279,51 @@ def normalize_to_range(values: np.ndarray, low: float, high: float) -> np.ndarra
     return low + normalized * (high - low)
 
 
-def can_translate_xy(obj: ObjectSpec, scene: SceneSpec, registry: AssetRegistry) -> bool:
+def can_translate_xy(
+    obj: ObjectSpec,
+    scene: SceneSpec,
+    registry: AssetRegistry,
+    config: JointPoseOptimizerConfig,
+) -> bool:
     if obj.role == "anchor":
+        return False
+    if config.lock_structural_supports and has_support_children(obj, scene):
         return False
     if obj.parent_id and obj.relation in {"on", "inside"}:
         return False
     return mounted_support_kind(obj, registry) in {None, "ground_and_wall"}
+
+
+def collision_penalty(scene: SceneSpec, registry: AssetRegistry) -> float:
+    penalty = 0.0
+    objects = {obj.id: obj for obj in scene.objects}
+    for collision in detect_collisions(scene, registry, tolerance=0.012):
+        left = objects[collision.object_a]
+        right = objects[collision.object_b]
+        if left.category == "floor_marking" or right.category == "floor_marking":
+            continue
+        penalty += 1.0 + float(collision.penetration)
+    return penalty
+
+
+def has_support_children(obj: ObjectSpec, scene: SceneSpec) -> bool:
+    return any(child.parent_id == obj.id and child.relation in {"on", "inside"} for child in scene.objects)
+
+
+def can_scale_update(obj: ObjectSpec, scene: SceneSpec, config: JointPoseOptimizerConfig) -> bool:
+    if not config.lock_structural_supports:
+        return True
+    return obj.role != "anchor" and not has_support_children(obj, scene) and not is_supported_child(obj)
+
+
+def can_yaw_update(obj: ObjectSpec, scene: SceneSpec, config: JointPoseOptimizerConfig) -> bool:
+    if not config.lock_structural_supports:
+        return True
+    return obj.role != "anchor" and not has_support_children(obj, scene) and not is_supported_child(obj)
+
+
+def is_supported_child(obj: ObjectSpec) -> bool:
+    return bool(obj.parent_id and obj.relation in {"on", "inside"})
 
 
 def depth_scale_target(
@@ -307,7 +357,7 @@ def propose_object_update(
     config: JointPoseOptimizerConfig,
 ) -> dict[str, Any]:
     proposal: dict[str, Any] = {"has_update": False}
-    if target.depth_xy is not None and can_translate_xy(obj, scene, registry):
+    if target.depth_xy is not None and can_translate_xy(obj, scene, registry, config):
         delta_xy = np.asarray(target.depth_xy, dtype=np.float64) - np.asarray([obj.placement.x, obj.placement.y], dtype=np.float64)
         raw_step = delta_xy * config.learning_rate
         norm = float(np.linalg.norm(raw_step))
@@ -316,16 +366,16 @@ def propose_object_update(
         if float(np.linalg.norm(raw_step)) > 1e-6:
             proposal["translation_delta_m"] = [round(float(raw_step[0]), 6), round(float(raw_step[1]), 6), 0.0]
             proposal["has_update"] = True
-    if target.depth_scale is not None:
+    if target.depth_scale is not None and can_scale_update(obj, scene, config):
         max_delta = obj.placement.scale * config.max_scale_step_fraction
         scale_delta = float(np.clip((target.depth_scale - obj.placement.scale) * config.learning_rate, -max_delta, max_delta))
         if abs(scale_delta) > 1e-6:
             proposal["scale_delta"] = round(scale_delta, 6)
             proposal["has_update"] = True
     yaw_deltas: list[tuple[float, float]] = []
-    if target.depth_yaw_deg is not None:
+    if target.depth_yaw_deg is not None and can_yaw_update(obj, scene, config):
         yaw_deltas.append((angle_delta_deg(obj.placement.yaw_deg, target.depth_yaw_deg), config.depth_yaw_weight))
-    if target.roma_yaw_deg is not None:
+    if target.roma_yaw_deg is not None and can_yaw_update(obj, scene, config):
         yaw_deltas.append((angle_delta_deg(obj.placement.yaw_deg, target.roma_yaw_deg), config.roma_yaw_weight))
     if yaw_deltas:
         weighted = sum(delta * weight for delta, weight in yaw_deltas)

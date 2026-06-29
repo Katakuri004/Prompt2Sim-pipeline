@@ -27,8 +27,20 @@ def main() -> None:
         action="store_true",
         help="Strictly resume from existing coarse_scene_spec/guidance/segmentation/depth artifacts in --out.",
     )
+    parser.add_argument(
+        "--resume-from-guidance",
+        action="store_true",
+        help="Revalidate existing OpenAI guidance, then rerun segmentation, depth, and all downstream stages.",
+    )
+    parser.add_argument(
+        "--resume-from-correspondence",
+        action="store_true",
+        help="Reuse a successful non-stale strict asset correspondence report, then rerun layout and downstream stages.",
+    )
     parser.add_argument("--check-runtime-only", action="store_true")
     args = parser.parse_args()
+    if sum((args.resume_from_existing, args.resume_from_guidance, args.resume_from_correspondence)) > 1:
+        parser.error("faithful resume modes are mutually exclusive")
 
     if args.check_runtime_only:
         config = read_yaml(resolve_path(args.config, ROOT))
@@ -53,6 +65,8 @@ def main() -> None:
         config_path=args.config,
         repair_rounds=args.repair_rounds,
         resume_from_existing=args.resume_from_existing,
+        resume_from_guidance=args.resume_from_guidance,
+        resume_from_correspondence=args.resume_from_correspondence,
     )
     print(f"Output directory: {result.out_dir}")
     print(f"Objects: {len(result.scene.objects)}")

@@ -6,7 +6,7 @@ import math
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 
 def main() -> None:
@@ -33,7 +33,7 @@ def render_thumbnail(item: dict, resolution: tuple[int, int]) -> None:
     if not imported:
         raise RuntimeError(f"Imported mesh has no mesh objects: {item['mesh_path']}")
     normalize_objects(imported, item["dimensions"])
-    setup_camera(imported)
+    camera, center, size = setup_camera(imported)
     setup_lights()
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
@@ -42,10 +42,19 @@ def render_thumbnail(item: dict, resolution: tuple[int, int]) -> None:
     scene.render.resolution_y = resolution[1]
     scene.render.film_transparent = True
     scene.render.image_settings.file_format = "PNG"
-    output_path = Path(item["thumbnail_path"])
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    scene.render.filepath = str(output_path)
-    bpy.ops.render.render(write_still=True)
+    render_output(scene, Path(item["thumbnail_path"]))
+    view_paths = item.get("view_paths") or {}
+    expected_views = {"front", "side", "oblique"}
+    if view_paths and set(view_paths) != expected_views:
+        raise RuntimeError(f"view_paths must contain exactly {sorted(expected_views)} for {item['asset_id']}")
+    view_offsets = {
+        "front": Vector((0.0, -2.6, 0.75)),
+        "side": Vector((2.6, 0.0, 0.75)),
+        "oblique": Vector((1.7, -2.4, 1.25)),
+    }
+    for view_name, output in view_paths.items():
+        set_camera_view(camera, center, size, view_offsets[view_name])
+        render_output(scene, Path(output))
 
 
 def clear_scene() -> None:
@@ -54,6 +63,7 @@ def clear_scene() -> None:
 
 
 def normalize_objects(objects: list, dimensions: list[float]) -> None:
+    bpy.context.view_layer.update()
     min_corner, max_corner = object_bounds(objects)
     source_size = max_corner - min_corner
     target = Vector(dimensions)
@@ -63,14 +73,13 @@ def normalize_objects(objects: list, dimensions: list[float]) -> None:
         target.z / max(source_size.z, 1e-6),
     )
     center = (min_corner + max_corner) * 0.5
+    transform = Matrix.Translation((-center.x * scale, -center.y * scale, -min_corner.z * scale)) @ Matrix.Scale(scale, 4)
+    world_matrices = {obj: obj.matrix_world.copy() for obj in objects}
     for obj in objects:
-        obj.location -= center
-        obj.scale *= scale
-    min_corner, max_corner = object_bounds(objects)
-    center = (min_corner + max_corner) * 0.5
+        obj.parent = None
     for obj in objects:
-        obj.location -= center
-        obj.location.z -= min_corner.z
+        obj.matrix_world = transform @ world_matrices[obj]
+    bpy.context.view_layer.update()
 
 
 def object_bounds(objects: list) -> tuple[Vector, Vector]:
@@ -83,19 +92,36 @@ def object_bounds(objects: list) -> tuple[Vector, Vector]:
     return min_corner, max_corner
 
 
-def setup_camera(objects: list) -> None:
+def setup_camera(objects: list) -> tuple[object, Vector, float]:
     min_corner, max_corner = object_bounds(objects)
     center = (min_corner + max_corner) * 0.5
     size = max((max_corner - min_corner).x, (max_corner - min_corner).y, (max_corner - min_corner).z, 0.5)
     camera_data = bpy.data.cameras.new("thumbnail_camera")
     camera = bpy.data.objects.new("thumbnail_camera", camera_data)
     bpy.context.collection.objects.link(camera)
-    camera.location = center + Vector((size * 1.4, -size * 2.2, size * 1.2))
-    direction = center - camera.location
-    camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
     camera_data.type = "ORTHO"
     camera_data.ortho_scale = size * 1.45
     bpy.context.scene.camera = camera
+    set_camera_view(camera, center, size, Vector((1.7, -2.4, 1.25)))
+    return camera, center, size
+
+
+def set_camera_view(camera: object, center: Vector, size: float, direction_scale: Vector) -> None:
+    camera.location = center + Vector(
+        (
+            size * direction_scale.x,
+            size * direction_scale.y,
+            size * direction_scale.z,
+        )
+    )
+    direction = center - camera.location
+    camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+
+
+def render_output(scene: object, output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    scene.render.filepath = str(output_path)
+    bpy.ops.render.render(write_still=True)
 
 
 def setup_lights() -> None:

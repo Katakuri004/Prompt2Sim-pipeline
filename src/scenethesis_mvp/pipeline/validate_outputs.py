@@ -17,6 +17,9 @@ REQUIRED_OUTPUTS = [
     "judge.json",
     "pipeline_diagnostics.json",
     "qualification.json",
+    "asset_correspondence.json",
+    "render_validation.json",
+    "guidance_validation.json",
     "report.md",
 ]
 
@@ -34,7 +37,9 @@ def validate_run(out_dir: str | Path, min_objects: int = 6) -> dict[str, Any]:
     mesh_metrics_path = target / "mesh_metrics.json"
     mesh_metrics = MeshMetrics.model_validate(read_json(mesh_metrics_path)) if mesh_metrics_path.exists() else None
     render_validation_path = target / "render_validation.json"
-    render_validation = read_json(render_validation_path) if render_validation_path.exists() else {"ok": True}
+    render_validation = read_json(render_validation_path) if render_validation_path.exists() else {}
+    asset_correspondence = read_json(target / "asset_correspondence.json")
+    guidance_validation = read_json(target / "guidance_validation.json")
     correspondence_path = target / "correspondence_diagnostics.json"
     correspondence = read_json(correspondence_path) if correspondence_path.exists() else {}
     joint_pose_path = target / "joint_pose_optimizer.json"
@@ -54,6 +59,11 @@ def validate_run(out_dir: str | Path, min_objects: int = 6) -> dict[str, Any]:
             "qualification_status": qualification.get("status"),
             "render_visual_support_ok": bool(render_validation.get("ok", False)),
             "render_visual_support_failure_count": int(render_validation.get("visual_support_failure_count", 0)),
+            "render_visual_collision_failure_count": int(render_validation.get("visual_collision_failure_count", 0)),
+            "asset_correspondence_ok": bool(asset_correspondence.get("ok", False)),
+            "asset_correspondence_matched_count": asset_correspondence.get("matched_object_count"),
+            "asset_correspondence_failed_count": asset_correspondence.get("failed_object_count"),
+            "guidance_inventory_ok": bool(guidance_validation.get("ok", False)),
             "roma_correspondence_ok": bool(correspondence.get("ok", False)),
             "roma_failed_object_count": correspondence.get("failed_object_count"),
             "joint_pose_optimizer_ok": bool(joint_pose.get("ok", False)),
@@ -83,5 +93,9 @@ def validate_run(out_dir: str | Path, min_objects: int = 6) -> dict[str, Any]:
         and result["qualification_accepted"]
         and result["mesh_physics_ok"]
         and result["render_visual_support_ok"]
+        and result["asset_correspondence_ok"]
+        and result["asset_correspondence_matched_count"] == len(scene.objects)
+        and result["asset_correspondence_failed_count"] == 0
+        and result["guidance_inventory_ok"]
     )
     return result

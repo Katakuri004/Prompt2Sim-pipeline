@@ -86,6 +86,48 @@ def test_warehouse_presentation_staging_keeps_floor_and_mounted_assets_physical(
     assert light.placement.z > 2.5
 
 
+def test_warehouse_staging_preserves_explicit_pallet_supported_crate() -> None:
+    root = Path(__file__).resolve().parents[1]
+    registry = AssetRegistry.from_yaml(root / "configs" / "warehouse_asset_registry.yaml")
+    scene = SceneSpec(
+        prompt="warehouse rack with boxes and a crate on a pallet",
+        bounds=(8.0, 7.0, 3.2),
+        objects=[
+            ObjectSpec(id="shelf_01", category="shelf", role="anchor", asset_id="hf_pallet_rack_large_01"),
+            ObjectSpec(
+                id="box_01",
+                category="box",
+                role="child",
+                parent_id="shelf_01",
+                relation="on",
+                asset_id="authored_clean_cardboard_box_01",
+            ),
+            ObjectSpec(id="pallet_01", category="pallet", role="parent", asset_id="hf_wood_pallet_01"),
+            ObjectSpec(
+                id="crate_01",
+                category="box",
+                role="child",
+                parent_id="pallet_01",
+                relation="on",
+                asset_id="authored_x_braced_wooden_crate_01",
+            ),
+        ],
+        constraints=[
+            _constraint("on", "box_01", "shelf_01"),
+            _constraint("on", "crate_01", "pallet_01"),
+        ],
+    )
+
+    staged = stage_warehouse_presentation_layout(scene, registry)
+    crate = staged.object_by_id("crate_01")
+    constraint = next(item for item in staged.constraints if item.subject_id == crate.id)
+
+    assert crate.parent_id == "pallet_01"
+    assert crate.relation == "on"
+    assert constraint.target_id == "pallet_01"
+    assert constraint.type == "on"
+
+
 def test_optimizer_produces_stable_robotics_lab_layout() -> None:
     root = Path(__file__).resolve().parents[1]
     registry = AssetRegistry.from_yaml(root / "configs" / "asset_registry.yaml")

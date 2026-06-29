@@ -104,10 +104,62 @@ def test_joint_pose_optimizer_lowers_depth_roma_loss(tmp_path: Path) -> None:
     assert report["ok"] is True
     assert report["final_loss"]["total_loss"] < report["initial_loss"]["total_loss"]
     assert report["applied_updates"] > 0
+    assert optimized.object_by_id("table").placement.yaw_deg == pytest.approx(scene.object_by_id("table").placement.yaw_deg)
+    assert optimized.object_by_id("table").placement.scale == pytest.approx(scene.object_by_id("table").placement.scale)
     assert optimized.object_by_id("box").placement.scale > scene.object_by_id("box").placement.scale
     assert optimized.object_by_id("box").placement.yaw_deg != scene.object_by_id("box").placement.yaw_deg
     assert (tmp_path / "joint_pose_optimizer.json").is_file()
     assert (tmp_path / "pose_loss_history.json").is_file()
+
+
+def test_joint_pose_optimizer_locks_support_parents(tmp_path: Path) -> None:
+    registry = _registry()
+    scene = SceneSpec(
+        prompt="table with box",
+        bounds=[6.0, 5.0, 3.0],
+        objects=[
+            ObjectSpec(
+                id="table",
+                category="table",
+                asset_id="proc_table_01",
+                role="parent",
+                placement=PlacementSpec(x=2.0, y=2.0, z=0.41),
+            ),
+            ObjectSpec(
+                id="box",
+                category="box",
+                asset_id="proc_box_01",
+                role="child",
+                parent_id="table",
+                relation="on",
+                placement=PlacementSpec(x=2.0, y=2.0, z=0.96),
+            ),
+            ObjectSpec(
+                id="cylinder",
+                category="cylinder",
+                asset_id="proc_cylinder_01",
+                role="anchor",
+                placement=PlacementSpec(x=4.5, y=2.5, z=0.275),
+            ),
+        ],
+    )
+    _write_correspondences(tmp_path, ["table", "box", "cylinder"])
+
+    optimized, report = run_joint_pose_optimizer(
+        scene,
+        _graph(tmp_path),
+        registry,
+        tmp_path,
+        {"max_iters": 3, "max_yaw_step_deg": 6.0, "max_translation_step_m": 0.08},
+    )
+
+    assert report["ok"] is True
+    assert optimized.object_by_id("table").placement.x == pytest.approx(scene.object_by_id("table").placement.x)
+    assert optimized.object_by_id("table").placement.y == pytest.approx(scene.object_by_id("table").placement.y)
+    assert optimized.object_by_id("table").placement.yaw_deg == pytest.approx(scene.object_by_id("table").placement.yaw_deg)
+    assert optimized.object_by_id("table").placement.scale == pytest.approx(scene.object_by_id("table").placement.scale)
+    assert optimized.object_by_id("box").placement.yaw_deg == pytest.approx(scene.object_by_id("box").placement.yaw_deg)
+    assert optimized.object_by_id("box").placement.scale == pytest.approx(scene.object_by_id("box").placement.scale)
 
 
 def test_joint_pose_optimizer_requires_correspondence_files(tmp_path: Path) -> None:

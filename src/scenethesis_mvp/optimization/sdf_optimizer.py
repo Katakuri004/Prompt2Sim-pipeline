@@ -19,6 +19,8 @@ class SDFOptimizerConfig:
     optimizer: str = "sgd"
     max_iters: int = 120
     learning_rate: float = 0.03
+    stall_patience: int = 12
+    min_iters_before_stall: int = 12
     collision_tolerance_m: float = 0.01
     support_tolerance_m: float = 0.08
     scale_step_limit: float = 0.015
@@ -107,6 +109,8 @@ class SDFPhysicsOptimizer:
             self._enforce_scene_bounds(obj, template, optimized.bounds)
 
             unresolved = 0
+            best_unresolved = 10**9
+            stalled_iterations = 0
             for iteration in range(self.config.max_iters):
                 world_points = self._transform_points(template.surface_points, obj.placement)
                 world_centroid = world_points.mean(axis=0)
@@ -119,6 +123,11 @@ class SDFPhysicsOptimizer:
                     obj.parent_id if obj.relation in {"on", "inside"} else None,
                 )
                 unresolved = penetration_count
+                if penetration_count < best_unresolved:
+                    best_unresolved = penetration_count
+                    stalled_iterations = 0
+                else:
+                    stalled_iterations += 1
                 event["iterations"].append(
                     {
                         "iteration": iteration,
@@ -127,6 +136,9 @@ class SDFPhysicsOptimizer:
                     }
                 )
                 if penetration_count == 0:
+                    break
+                if iteration >= self.config.min_iters_before_stall and stalled_iterations >= self.config.stall_patience:
+                    event["iterations"][-1]["stopped_reason"] = "sdf_descent_stalled"
                     break
                 step_norm = float(np.linalg.norm(update))
                 if step_norm > self.config.translation_step_limit_m:
@@ -414,6 +426,11 @@ class SDFPhysicsOptimizer:
                 continue
             parent_dims = np.asarray(parent_asset.dimensions, dtype=np.float64) * float(parent.placement.scale)
             count = len(children)
+            parent_tags = {tag.lower() for tag in parent_asset.tags}
+            shelf_like = parent_asset.category == "shelf" or bool(parent_tags.intersection({"shelf", "pallet_rack", "rack"}))
+            if shelf_like:
+                level_limit = 2 if "pallet_rack" in parent_tags else min(3, len(support_planes))
+                support_planes = support_planes[: max(1, level_limit)]
             columns = max(1, int(np.ceil(np.sqrt(count))))
             rows = max(1, int(np.ceil(count / columns)))
             for index, child in enumerate(children):
@@ -421,15 +438,22 @@ class SDFPhysicsOptimizer:
                     continue
                 child_asset = registry.get(child.asset_id)
                 child_dims = np.asarray(child_asset.dimensions, dtype=np.float64) * float(child.placement.scale)
-                level_index = index % len(support_planes)
-                col = index % columns
-                row = index // columns
-                usable_x = max(0.05, parent_dims[0] - child_dims[0] - 0.18)
-                usable_y = max(0.05, parent_dims[1] - child_dims[1] - 0.14)
-                local_x = 0.0 if columns == 1 else -usable_x * 0.5 + usable_x * (col / max(1, columns - 1))
-                if rows == 1 and parent_asset.category == "shelf":
-                    local_y = -usable_y * 0.28
+                if shelf_like:
+                    level_count = len(support_planes)
+                    level_index = index % level_count
+                    slot_index = index // level_count
+                    slots_on_level = max(1, (count + level_count - 1 - level_index) // level_count)
+                    usable_x = max(0.0, parent_dims[0] - child_dims[0] - 0.28)
+                    local_x = 0.0 if slots_on_level == 1 else -usable_x * 0.5 + usable_x * (slot_index / max(1, slots_on_level - 1))
+                    shelf_clearance_y = max(0.0, parent_dims[1] - child_dims[1])
+                    local_y = -min(parent_dims[1] * 0.18, shelf_clearance_y * 0.45)
                 else:
+                    level_index = index % len(support_planes)
+                    col = index % columns
+                    row = index // columns
+                    usable_x = max(0.05, parent_dims[0] - child_dims[0] - 0.18)
+                    usable_y = max(0.05, parent_dims[1] - child_dims[1] - 0.14)
+                    local_x = 0.0 if columns == 1 else -usable_x * 0.5 + usable_x * (col / max(1, columns - 1))
                     local_y = 0.0 if rows == 1 else -usable_y * 0.5 + usable_y * (row / max(1, rows - 1))
                 child.placement.x, child.placement.y = self._local_to_world_xy(parent, local_x, local_y)
                 target_surface_z = support_planes[level_index]

@@ -1,16 +1,20 @@
 from __future__ import annotations
 
+import os
 import traceback
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from scenethesis_mvp.assets.clip_index import ClipAssetRetriever, ClipIndexConfig
+from scenethesis_mvp.assets.grs_retriever import AssetCorrespondenceNoMatch, GRSAssetRetrievalConfig, GRSAssetRetriever
 from scenethesis_mvp.assets.registry import AssetRegistry
+from scenethesis_mvp.assets.visual_profiles import VIEW_NAMES, AssetProfileConfig, AssetVisualProfileStore
 from scenethesis_mvp.layout.optimizer import spread_children
 from scenethesis_mvp.layout.relation_rules import normalize_support_relation_semantics, place_relative_to_target
 from scenethesis_mvp.layout.warehouse_staging import stage_warehouse_presentation_layout
 from scenethesis_mvp.llm.judge import SceneJudge
+from scenethesis_mvp.llm.openai_client import OpenAIClient
 from scenethesis_mvp.llm.planner import ScenePlanner
 from scenethesis_mvp.llm.repair import RepairEngine
 from scenethesis_mvp.optimization.roma_correspondence import run_roma_correspondence_refinement
@@ -52,6 +56,8 @@ def run_faithful_pipeline(
     config_path: str | Path = "configs/scenethesis_faithful.yaml",
     repair_rounds: int | None = None,
     resume_from_existing: bool = False,
+    resume_from_guidance: bool = False,
+    resume_from_correspondence: bool = False,
 ) -> FaithfulPipelineResult:
     root = project_root()
     config_file = resolve_path(config_path, root)
@@ -87,58 +93,97 @@ def run_faithful_pipeline(
         joint_pose_cfg = config.get("joint_pose_optimizer", {})
         render_cfg = config.get("render", {})
         repair_limit = int(config.get("repair", {}).get("rounds", 2)) if repair_rounds is None else repair_rounds
+        vision_model = os.getenv("OPENAI_VISION_MODEL", str(openai_cfg.get("vision_model", "gpt-5.5")))
+        openai_client = OpenAIClient()
+        profile_store = AssetVisualProfileStore(
+            AssetProfileConfig(
+                profile_dir=resolve_path(retrieval_cfg["profile_dir"], root),
+                view_dir=resolve_path(retrieval_cfg["view_dir"], root),
+                system_prompt_path=resolve_path(paths["asset_profile_prompt"], root),
+                model=vision_model,
+                max_retries=int(openai_cfg.get("max_retries", 3)),
+                resolution=int(retrieval_cfg.get("profile_resolution", 512)),
+                blender_path=render_cfg.get("blender_path"),
+            ),
+            client=openai_client,
+        )
+        guidance_generator = ImageGuidanceGenerator(
+            client=openai_client,
+            image_model=openai_cfg.get("image_model", "gpt-image-1"),
+            vision_model=openai_cfg.get("vision_model", "gpt-5.5"),
+            validation_prompt_path=resolve_path(paths["guidance_validation_prompt"], root),
+            profile_store=profile_store,
+            max_validation_attempts=int(image_cfg.get("max_validation_attempts", 3)),
+            correction_mode=str(image_cfg.get("correction_mode", "")),
+            max_retries=int(openai_cfg.get("max_retries", 3)),
+        )
+        segmenter = GroundedSAMSegmenter(
+            GroundedSAMConfig(
+                grounding_dino_config=resolve_path(segmentation_cfg["grounding_dino_config"], root),
+                grounding_dino_checkpoint=resolve_path(segmentation_cfg["grounding_dino_checkpoint"], root),
+                sam_checkpoint=resolve_path(segmentation_cfg["sam_checkpoint"], root),
+                sam_model_type=str(segmentation_cfg.get("sam_model_type", "vit_h")),
+                box_threshold=float(segmentation_cfg.get("box_threshold", 0.30)),
+                text_threshold=float(segmentation_cfg.get("text_threshold", 0.25)),
+                device=str(segmentation_cfg.get("device", "cuda")),
+                min_mask_pixels=int(pose_cfg.get("min_mask_pixels", 128)),
+                min_expected_box_iou=float(segmentation_cfg.get("min_expected_box_iou", 0.10)),
+                min_expected_box_coverage=float(segmentation_cfg.get("min_expected_box_coverage", 0.20)),
+            )
+        )
+        depth_runner = DepthProRunner(
+            DepthProConfig(
+                repo_dir=resolve_path(depth_cfg["repo_dir"], root),
+                checkpoint_dir=resolve_path(depth_cfg["checkpoint_dir"], root),
+                device=str(depth_cfg.get("device", "cuda")),
+            )
+        )
 
-        if resume_from_existing:
+        if sum((resume_from_existing, resume_from_guidance, resume_from_correspondence)) > 1:
+            raise RuntimeError("faithful resume modes are mutually exclusive")
+        if resume_from_existing or resume_from_correspondence:
             stage = "resume_validation"
             scene, guidance, segmentation, depth = load_existing_faithful_artifacts(target_dir)
             validate_resume_artifacts(scene, guidance, segmentation, depth)
             scene = normalize_support_relation_semantics(scene, registry)
         else:
-            stage = "llm_planning"
-            planner = ScenePlanner(
-                model=openai_cfg.get("model", "gpt-4o-mini"),
-                system_prompt_path=resolve_path(paths.get("planner_prompt", "configs/prompts/planner_system.txt"), root),
-                max_retries=int(openai_cfg.get("max_retries", 3)),
-            )
-            scene = planner.plan(prompt, registry, tuple(scene_cfg.get("bounds", [8.0, 7.0, 3.2])))  # type: ignore[arg-type]
-            scene = normalize_support_relation_semantics(scene, registry)
-            write_json(target_dir / "coarse_scene_spec.json", scene)
+            if resume_from_guidance:
+                stage = "existing_guidance_validation"
+                scene = SceneSpec.model_validate(read_json(require_resume_file(target_dir, "coarse_scene_spec.json")))
+                scene = normalize_support_relation_semantics(scene, registry)
+                guidance = guidance_generator.validate_existing(prompt, scene, registry, target_dir)
+            else:
+                stage = "llm_planning"
+                planner = ScenePlanner(
+                    model=openai_cfg.get("model", "gpt-4o-mini"),
+                    system_prompt_path=resolve_path(paths.get("planner_prompt", "configs/prompts/planner_system.txt"), root),
+                    max_retries=int(openai_cfg.get("max_retries", 3)),
+                    max_objects=int(scene_cfg.get("max_objects", 18)),
+                )
+                scene = planner.plan(prompt, registry, tuple(scene_cfg.get("bounds", [8.0, 7.0, 3.2])))  # type: ignore[arg-type]
+                scene = normalize_support_relation_semantics(scene, registry)
+                write_json(target_dir / "coarse_scene_spec.json", scene)
 
-            stage = "image_guidance"
-            guidance = ImageGuidanceGenerator(
-                image_model=openai_cfg.get("image_model", "gpt-image-1"),
-                max_retries=int(openai_cfg.get("max_retries", 3)),
-            ).run(
-                prompt=prompt,
-                scene=scene,
-                registry=registry,
-                out_dir=target_dir,
-                image_size=str(image_cfg.get("image_size", "1024x1024")),
-                image_quality=str(image_cfg.get("image_quality", "low")),
-            )
+                stage = "image_guidance"
+                guidance = guidance_generator.run(
+                    prompt=prompt,
+                    scene=scene,
+                    registry=registry,
+                    out_dir=target_dir,
+                    image_size=str(image_cfg.get("image_size", "1024x1024")),
+                    image_quality=str(image_cfg.get("image_quality", "low")),
+                )
 
             stage = "segmentation"
-            segmentation = GroundedSAMSegmenter(
-                GroundedSAMConfig(
-                    grounding_dino_config=resolve_path(segmentation_cfg["grounding_dino_config"], root),
-                    grounding_dino_checkpoint=resolve_path(segmentation_cfg["grounding_dino_checkpoint"], root),
-                    sam_checkpoint=resolve_path(segmentation_cfg["sam_checkpoint"], root),
-                    sam_model_type=str(segmentation_cfg.get("sam_model_type", "vit_h")),
-                    box_threshold=float(segmentation_cfg.get("box_threshold", 0.30)),
-                    text_threshold=float(segmentation_cfg.get("text_threshold", 0.25)),
-                    device=str(segmentation_cfg.get("device", "cuda")),
-                    min_mask_pixels=int(pose_cfg.get("min_mask_pixels", 128)),
-                )
-            ).segment(guidance.guidance_path, scene, target_dir)
+            segmentation = segmenter.segment(
+                guidance.guidance_path,
+                scene,
+                target_dir,
+                expected_boxes_norm=guidance.object_boxes,
+            )
 
             stage = "depth_estimation"
-            depth = DepthProRunner(
-                DepthProConfig(
-                    repo_dir=resolve_path(depth_cfg["repo_dir"], root),
-                    checkpoint_dir=resolve_path(depth_cfg["checkpoint_dir"], root),
-                    device=str(depth_cfg.get("device", "cuda")),
-                )
-            ).estimate(guidance.guidance_path, target_dir)
+            depth = depth_runner.estimate(guidance.guidance_path, target_dir)
 
         stage = "scene_graph_3d"
         graph = build_pointcloud_scene_graph(
@@ -150,7 +195,11 @@ def run_faithful_pipeline(
         )
 
         stage = "asset_retrieval"
-        scene = ClipAssetRetriever(
+        if retrieval_cfg.get("provider") != "grs_multiview_vlm":
+            raise RuntimeError(
+                "Faithful asset retrieval requires provider=grs_multiview_vlm; CLIP-only selection is not allowed."
+            )
+        clip_shortlist = ClipAssetRetriever(
             ClipIndexConfig(
                 index_path=resolve_path(retrieval_cfg["index_path"], root),
                 device=str(retrieval_cfg.get("device", "cuda")),
@@ -158,7 +207,82 @@ def run_faithful_pipeline(
                 text_weight=float(retrieval_cfg.get("text_weight", 0.20)),
                 metadata_weight=float(retrieval_cfg.get("metadata_weight", 0.35)),
             )
-        ).retrieve(scene, segmentation, registry, target_dir)
+        )
+        asset_retriever = GRSAssetRetriever(
+            GRSAssetRetrievalConfig(
+                model=vision_model,
+                system_prompt_path=resolve_path(paths["asset_match_prompt"], root),
+                top_k=int(retrieval_cfg.get("top_k", 3)),
+                min_match_confidence=float(retrieval_cfg.get("min_match_confidence", 0.72)),
+                min_score_margin=float(retrieval_cfg.get("min_score_margin", 0.05)),
+                max_shape_error=float(retrieval_cfg.get("max_shape_error", 0.70)),
+                max_retries=int(openai_cfg.get("max_retries", 3)),
+            ),
+            shortlist_provider=clip_shortlist,
+            profile_store=profile_store,
+            client=openai_client,
+        )
+        if resume_from_correspondence:
+            stage = "asset_correspondence_resume_validation"
+            scene = apply_existing_asset_correspondence(
+                scene=scene,
+                report_path=target_dir / "asset_correspondence.json",
+                freshness_inputs=[
+                    target_dir / "coarse_scene_spec.json",
+                    guidance.guidance_path,
+                    target_dir / "segmentation.json",
+                    resolve_path(retrieval_cfg["index_path"], root),
+                ],
+                registry=registry,
+                profile_store=profile_store,
+            )
+        else:
+            guidance_repair_limit = int(retrieval_cfg.get("guidance_repair_rounds", 0))
+            attempted_asset_repairs, previous_asset_repair_index = load_asset_repair_state(target_dir)
+            for asset_repair_index in range(guidance_repair_limit + 1):
+                try:
+                    scene = asset_retriever.retrieve(scene, segmentation, graph, registry, target_dir)
+                    break
+                except AssetCorrespondenceNoMatch as exc:
+                    repair_key = (exc.object_id, exc.target_asset_id)
+                    if asset_repair_index >= guidance_repair_limit or repair_key in attempted_asset_repairs:
+                        raise
+                    attempted_asset_repairs.add(repair_key)
+                    repair_sequence = previous_asset_repair_index + asset_repair_index + 1
+                    stage = f"asset_guidance_repair_{repair_sequence}"
+                    reference_views = profile_store.view_paths(exc.target_asset_id)
+                    guidance = guidance_generator.repair_object_to_asset(
+                        prompt=prompt,
+                        scene=scene,
+                        registry=registry,
+                        out_dir=target_dir,
+                        object_id=exc.object_id,
+                        target_asset_id=exc.target_asset_id,
+                        reference_view_paths=[reference_views[name] for name in VIEW_NAMES],
+                        failure_reason=exc.reason,
+                        repair_index=repair_sequence,
+                        image_size=str(image_cfg.get("image_size", "1024x1024")),
+                        image_quality=str(image_cfg.get("image_quality", "low")),
+                    )
+                    stage = f"asset_guidance_repair_{repair_sequence}_segmentation"
+                    segmentation = segmenter.segment(
+                        guidance.guidance_path,
+                        scene,
+                        target_dir,
+                        expected_boxes_norm=guidance.object_boxes,
+                    )
+                    stage = f"asset_guidance_repair_{repair_sequence}_depth"
+                    depth = depth_runner.estimate(guidance.guidance_path, target_dir)
+                    stage = f"asset_guidance_repair_{repair_sequence}_scene_graph"
+                    graph = build_pointcloud_scene_graph(
+                        segmentation=segmentation,
+                        depth=depth,
+                        out_dir=target_dir,
+                        max_points_per_object=int(pose_cfg.get("max_points_per_object", 5000)),
+                        min_mask_pixels=int(pose_cfg.get("min_mask_pixels", 128)),
+                    )
+            else:
+                raise RuntimeError("Asset correspondence loop exhausted without a matched scene.")
         scene = stage_warehouse_presentation_layout(scene, registry)
         stage = "depth_pose_refinement"
         scene, _depth_pose_report = apply_depth_pose_refinement(
@@ -312,12 +436,28 @@ def run_faithful_pipeline(
 def load_existing_faithful_artifacts(target_dir: str | Path) -> tuple[SceneSpec, ImageGuidanceResult, SegmentationResult, DepthResult]:
     run_dir = Path(target_dir)
     scene = SceneSpec.model_validate(read_json(require_resume_file(run_dir, "coarse_scene_spec.json")))
+    guidance_validation = read_json(require_resume_file(run_dir, "guidance_validation.json"))
+    if not guidance_validation.get("ok", False):
+        raise RuntimeError("Cannot resume faithful pipeline; guidance inventory validation did not pass.")
     guidance_path = require_resume_file(run_dir, "guidance.png")
+    attempts = guidance_validation.get("attempts", [])
+    if not attempts:
+        raise RuntimeError("Cannot resume faithful pipeline; guidance validation has no attempts.")
+    object_records = attempts[-1].get("decision", {}).get("objects", [])
+    object_boxes = {str(item.get("object_id")): item.get("bbox_xyxy_norm") for item in object_records}
+    scene_ids = {obj.id for obj in scene.objects}
+    if set(object_boxes) != scene_ids:
+        raise RuntimeError(
+            "Cannot resume faithful pipeline; guidance validation object-box coverage differs from SceneSpec."
+        )
+    if any(not isinstance(box, list) or len(box) != 4 for box in object_boxes.values()):
+        raise RuntimeError("Cannot resume faithful pipeline; guidance validation object boxes are invalid.")
     guidance = ImageGuidanceResult(
         guidance_path=guidance_path,
         image_metadata=read_json(require_resume_file(run_dir, "guidance_image.json")),
         upsampled_prompt=require_resume_file(run_dir, "upsampled_prompt.txt").read_text(encoding="utf-8"),
         candidates=read_json(require_resume_file(run_dir, "retrieval_candidates.json")),
+        object_boxes=object_boxes,
     )
     segmentation = SegmentationResult.model_validate(read_json(require_resume_file(run_dir, "segmentation.json")))
     depth = DepthResult.model_validate(read_json(require_resume_file(run_dir, "depth.json")))
@@ -331,6 +471,80 @@ def require_resume_file(run_dir: Path, relative_path: str) -> Path:
     return path
 
 
+def load_asset_repair_state(target_dir: Path) -> tuple[set[tuple[str, str]], int]:
+    repair_log_path = target_dir / "guidance_asset_repairs.json"
+    if not repair_log_path.is_file():
+        return set(), 0
+    payload = read_json(repair_log_path)
+    repairs = payload.get("repairs")
+    if not isinstance(repairs, list):
+        raise RuntimeError(f"Invalid asset guidance repair log: {repair_log_path}")
+    attempted: set[tuple[str, str]] = set()
+    highest_index = 0
+    for record in repairs:
+        if not isinstance(record, dict):
+            raise RuntimeError(f"Invalid asset guidance repair record: {repair_log_path}")
+        object_id = record.get("object_id")
+        target_asset_id = record.get("target_asset_id")
+        repair_index = record.get("repair_index")
+        if not isinstance(object_id, str) or not isinstance(target_asset_id, str):
+            raise RuntimeError(f"Invalid asset guidance repair identity: {repair_log_path}")
+        if not isinstance(repair_index, int) or repair_index < 1:
+            raise RuntimeError(f"Invalid asset guidance repair index: {repair_log_path}")
+        attempted.add((object_id, target_asset_id))
+        highest_index = max(highest_index, repair_index)
+    return attempted, highest_index
+
+
+def apply_existing_asset_correspondence(
+    scene: SceneSpec,
+    report_path: Path,
+    freshness_inputs: list[Path],
+    registry: AssetRegistry,
+    profile_store: AssetVisualProfileStore,
+) -> SceneSpec:
+    if not report_path.is_file():
+        raise RuntimeError(f"Cannot resume asset correspondence; report is missing: {report_path}")
+    missing_inputs = [str(path) for path in freshness_inputs if not path.is_file()]
+    if missing_inputs:
+        raise RuntimeError("Cannot resume asset correspondence; freshness inputs are missing: " + ", ".join(missing_inputs))
+    report_mtime = report_path.stat().st_mtime_ns
+    stale_inputs = [str(path) for path in freshness_inputs if path.stat().st_mtime_ns > report_mtime]
+    if stale_inputs:
+        raise RuntimeError(
+            "Cannot resume asset correspondence; report is older than its inputs: " + ", ".join(stale_inputs)
+        )
+    report = read_json(report_path)
+    if report.get("ok") is not True or report.get("provider") != "openai_multiview_asset_correspondence":
+        raise RuntimeError("Cannot resume asset correspondence; strict correspondence report is not successful.")
+    records = report.get("objects")
+    if not isinstance(records, list):
+        raise RuntimeError("Cannot resume asset correspondence; object records are invalid.")
+    records_by_id = {record.get("object_id"): record for record in records if isinstance(record, dict)}
+    expected_ids = {obj.id for obj in scene.objects}
+    if len(records_by_id) != len(records) or set(records_by_id) != expected_ids:
+        raise RuntimeError("Cannot resume asset correspondence; object coverage differs from SceneSpec.")
+
+    selected_ids: list[str] = []
+    updated = scene.model_copy(deep=True)
+    for obj in updated.objects:
+        record = records_by_id[obj.id]
+        asset_id = record.get("selected_asset_id")
+        if record.get("status") != "matched" or not isinstance(asset_id, str):
+            raise RuntimeError(f"Cannot resume asset correspondence; {obj.id} is not a strict match.")
+        asset = registry.get(asset_id)
+        if asset.category != obj.category:
+            raise RuntimeError(f"Cannot resume asset correspondence; category mismatch for {obj.id}.")
+        mesh = asset.resolved_mesh_path(registry.base_dir)
+        if not mesh or not mesh.is_file():
+            raise RuntimeError(f"Cannot resume asset correspondence; mesh is missing for {asset_id}.")
+        obj.asset_id = asset.id
+        obj.name = asset.name
+        selected_ids.append(asset.id)
+    profile_store.ensure_profiles(selected_ids, registry)
+    return updated
+
+
 def validate_resume_artifacts(
     scene: SceneSpec,
     guidance: ImageGuidanceResult,
@@ -342,6 +556,8 @@ def validate_resume_artifacts(
         raise RuntimeError(f"Cannot resume faithful pipeline; guidance image is missing: {guidance_path}")
 
     scene_ids = {obj.id for obj in scene.objects}
+    if set(guidance.object_boxes) != scene_ids:
+        raise RuntimeError("Cannot resume faithful pipeline; guidance object boxes do not cover the scene exactly.")
     detected_ids = {item.object_id for item in segmentation.detections if item.object_id}
     missing_ids = sorted(scene_ids - detected_ids)
     extra_ids = sorted(detected_ids - scene_ids)
@@ -489,6 +705,8 @@ def build_faithful_report(
     correspondence = read_json(out_dir / "correspondence_diagnostics.json") if (out_dir / "correspondence_diagnostics.json").exists() else {}
     depth_pose = read_json(out_dir / "depth_pose_refinement.json") if (out_dir / "depth_pose_refinement.json").exists() else {}
     joint_pose = read_json(out_dir / "joint_pose_optimizer.json") if (out_dir / "joint_pose_optimizer.json").exists() else {}
+    asset_correspondence = read_json(out_dir / "asset_correspondence.json") if (out_dir / "asset_correspondence.json").exists() else {}
+    guidance_validation = read_json(out_dir / "guidance_validation.json") if (out_dir / "guidance_validation.json").exists() else {}
     lines = [
         "# Scenethesis Faithful Pipeline Report",
         "",
@@ -500,6 +718,8 @@ def build_faithful_report(
         f"- GLB: {render_result.glb_path}",
         f"- Renderer: {render_result.renderer}",
         f"- Qualification: {qualification.get('status', 'pending')}",
+        f"- Guidance inventory validation: {'ok' if guidance_validation.get('ok', False) else 'missing/failed'}",
+        f"- Guidance attempts: {len(guidance_validation.get('attempts', []))}",
         "",
         "## Object List",
         "",
@@ -527,6 +747,23 @@ def build_faithful_report(
     lines.extend(
         [
             "",
+            "## Multimodal Asset Correspondence",
+            "",
+            f"- Status: {'ok' if asset_correspondence.get('ok', False) else 'missing/failed'}",
+            f"- Provider: {asset_correspondence.get('provider', 'unknown')}",
+            f"- Model: {asset_correspondence.get('model', 'unknown')}",
+            f"- Matched objects: {asset_correspondence.get('matched_object_count', 'unknown')}",
+            f"- Failed objects: {asset_correspondence.get('failed_object_count', 'unknown')}",
+        ]
+    )
+    for item in asset_correspondence.get("objects", []):
+        lines.append(
+            f"- {item.get('object_id')}: status={item.get('status')}, asset={item.get('selected_asset_id')}, "
+            f"confidence={item.get('confidence')}, margin={item.get('score_margin')}"
+        )
+    lines.extend(
+        [
+            "",
             "## SDF Metrics",
             "",
             f"- Objects: {metrics.object_count}",
@@ -540,6 +777,7 @@ def build_faithful_report(
             "",
             f"- Status: {'ok' if render_validation.get('ok', False) else 'unknown/failed'}",
             f"- Visual support failures: {render_validation.get('visual_support_failure_count', 'unknown')}",
+            f"- Visual mesh collision failures: {render_validation.get('visual_collision_failure_count', 'unknown')}",
             "",
             "## Qualification",
             "",

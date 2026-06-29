@@ -1,5 +1,5 @@
 {
-  "asset_count": 9,
+  "asset_count": 13,
   "assets": [
     {
       "attribution": "NVIDIA PhysicalAI-SimReady-Warehouse-01",
@@ -13,6 +13,32 @@
       "repo_type": "dataset",
       "source_url": "https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_Forklift_A01_Orange_01/SM_Forklift_A01_Orange_01.usd",
       "source_usd": "Props/general/SM_Forklift_A01_Orange_01/SM_Forklift_A01_Orange_01.usd"
+    },
+    {
+      "attribution": "NVIDIA PhysicalAI-SimReady-Warehouse-01",
+      "declared_dependency_prefixes": [],
+      "license": "CC-BY-4.0",
+      "local_glb": "assets\\library\\hf_simready\\hf_forklift_red_01\\hf_forklift_red_01.glb",
+      "local_thumbnail": "assets\\library\\hf_simready\\hf_forklift_red_01\\hf_forklift_red_01.png",
+      "local_usd": "assets\\library\\hf_simready\\hf_forklift_red_01\\raw\\Props\\general\\SM_Forklift_B01_Red_01\\SM_Forklift_B01_Red_01.usd",
+      "registry_id": "hf_forklift_red_01",
+      "repo_id": "nvidia/PhysicalAI-SimReady-Warehouse-01",
+      "repo_type": "dataset",
+      "source_url": "https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_Forklift_B01_Red_01/SM_Forklift_B01_Red_01.usd",
+      "source_usd": "Props/general/SM_Forklift_B01_Red_01/SM_Forklift_B01_Red_01.usd"
+    },
+    {
+      "attribution": "NVIDIA PhysicalAI-SimReady-Warehouse-01",
+      "declared_dependency_prefixes": [],
+      "license": "CC-BY-4.0",
+      "local_glb": "assets\\library\\hf_simready\\hf_forklift_blue_01\\hf_forklift_blue_01.glb",
+      "local_thumbnail": "assets\\library\\hf_simready\\hf_forklift_blue_01\\hf_forklift_blue_01.png",
+      "local_usd": "assets\\library\\hf_simready\\hf_forklift_blue_01\\raw\\Props\\general\\SM_Forklift_C01_Blue_01\\SM_Forklift_C01_Blue_01.usd",
+      "registry_id": "hf_forklift_blue_01",
+      "repo_id": "nvidia/PhysicalAI-SimReady-Warehouse-01",
+      "repo_type": "dataset",
+      "source_url": "https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_Forklift_C01_Blue_01/SM_Forklift_C01_Blue_01.usd",
+      "source_usd": "Props/general/SM_Forklift_C01_Blue_01/SM_Forklift_C01_Blue_01.usd"
     },
     {
       "attribution": "NVIDIA PhysicalAI-SimReady-Warehouse-01",
@@ -117,6 +143,32 @@
       "repo_type": "dataset",
       "source_url": "https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01.usd",
       "source_usd": "Props/general/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01.usd"
+    },
+    {
+      "attribution": "NVIDIA PhysicalAI-SimReady-Warehouse-01",
+      "declared_dependency_prefixes": [],
+      "license": "CC-BY-4.0",
+      "local_glb": "assets\\library\\hf_simready\\hf_metal_stainless_table_01\\hf_metal_stainless_table_01.glb",
+      "local_thumbnail": "assets\\library\\hf_simready\\hf_metal_stainless_table_01\\hf_metal_stainless_table_01.png",
+      "local_usd": "assets\\library\\hf_simready\\hf_metal_stainless_table_01\\raw\\Props\\general\\SM_MetalStainlessTable_A03_01\\SM_MetalStainlessTable_A03_01.usd",
+      "registry_id": "hf_metal_stainless_table_01",
+      "repo_id": "nvidia/PhysicalAI-SimReady-Warehouse-01",
+      "repo_type": "dataset",
+      "source_url": "https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_MetalStainlessTable_A03_01/SM_MetalStainlessTable_A03_01.usd",
+      "source_usd": "Props/general/SM_MetalStainlessTable_A03_01/SM_MetalStainlessTable_A03_01.usd"
+    },
+    {
+      "attribution": "NVIDIA PhysicalAI-SimReady-Warehouse-01",
+      "declared_dependency_prefixes": [],
+      "license": "CC-BY-4.0",
+      "local_glb": "assets\\library\\hf_simready\\hf_heavy_duty_packing_table_01\\hf_heavy_duty_packing_table_01.glb",
+      "local_thumbnail": "assets\\library\\hf_simready\\hf_heavy_duty_packing_table_01\\hf_heavy_duty_packing_table_01.png",
+      "local_usd": "assets\\library\\hf_simready\\hf_heavy_duty_packing_table_01\\raw\\Props\\general\\SM_HeavyDutyPackingTable_C01_01\\SM_HeavyDutyPackingTable_C01_01.usd",
+      "registry_id": "hf_heavy_duty_packing_table_01",
+      "repo_id": "nvidia/PhysicalAI-SimReady-Warehouse-01",
+      "repo_type": "dataset",
+      "source_url": "https://huggingface.co/datasets/nvidia/PhysicalAI-SimReady-Warehouse-01/resolve/main/Props/general/SM_HeavyDutyPackingTable_C01_01/SM_HeavyDutyPackingTable_C01_01.usd",
+      "source_usd": "Props/general/SM_HeavyDutyPackingTable_C01_01/SM_HeavyDutyPackingTable_C01_01.usd"
     }
   ],
   "bulk_download_allowed": false,

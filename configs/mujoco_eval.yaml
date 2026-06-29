@@ -1,0 +1,169 @@
+paths:
+  asset_registry: configs/warehouse_asset_registry.yaml
+robot:
+  id: panda
+  name: Franka Panda
+  mjcf_path: models/robots/panda/panda.xml
+  base_height_m: 0.0
+  base_clearance_m: 0.58
+  base_size_m: [0.46, 0.46, 0.18]
+  reach_m: 0.95
+  gripper_max_width_m: 0.08
+  home_qpos: [0.0, -1.3, 0.0, -2.0, 0.0, 2.5, 0.8, 0.04, 0.04]
+  arm_joint_names:
+    - joint1
+    - joint2
+    - joint3
+    - joint4
+    - joint5
+    - joint6
+    - joint7
+  gripper_joint_names:
+    - finger_joint1
+    - finger_joint2
+  actuator_names:
+    - actuator1
+    - actuator2
+    - actuator3
+    - actuator4
+    - actuator5
+    - actuator6
+    - actuator7
+    - actuator8
+  ee_site: panda_gripper_site
+task:
+  type: pick_and_place
+  require_graspable_target: true
+  target_categories: [scanner, tool, box, container, cylinder]
+  support_edge_clearance_m: 0.08
+  occupied_clearance_m: 0.08
+  destination_reach_margin_m: 0.05
+  destination_grid_x: 11
+  destination_grid_y: 9
+  destination_size_m: [0.12, 0.12, 0.08]
+  max_position_error_m: 0.05
+  max_rotation_error_deg: 15
+  max_pregrasp_target_drift_m: 0.03
+  stable_steps: 15
+  forbidden_contact_prefixes:
+    - table_edge
+    - camera_mount
+policy:
+  observation:
+    cameras:
+      - id: overhead_rgb
+        resolution: [224, 224]
+        fovy_deg: 58
+      - id: wrist_rgb
+        parent: hand
+        resolution: [224, 224]
+        fovy_deg: 58
+    proprio: [joint_position, joint_velocity, gripper_width]
+    language_instruction: true
+  action:
+    representation: delta_ee_pose_gripper
+    rate_hz: 10
+    bounds:
+      translation_m: 0.03
+      rotation_rad: 0.15
+      gripper: [-1.0, 1.0]
+rollout:
+  timestep: 0.002
+  physics_steps_per_action: 50
+  max_steps: 250
+  settle_steps: 100
+  seed: 7
+settling:
+  duration_s: 2.0
+  max_target_drift_m: 0.002
+  max_contact_force_n: 80.0
+visualization:
+  enabled: true
+  camera: report_task_closeup
+  resolution: [960, 720]
+  fps: 20
+  frame_stride: 2
+visual_twin:
+  camera: report_task_closeup
+  resolution: [1200, 900]
+  fps: 20
+  frame_stride: 1
+  max_frames: 240
+visual_scene:
+  mode: full_glb_visual
+  bounds_tolerance_m: 0.85
+  material_degradation_report: true
+physics_profiles:
+  default:
+    mass_kg: 1.0
+    density: 700
+    friction: [0.8, 0.02, 0.001]
+    restitution: 0.02
+    confidence: defaulted
+  categories:
+    box:
+      mass_kg: 0.35
+      density: 550
+      friction: [0.75, 0.02, 0.001]
+      restitution: 0.02
+      confidence: estimated
+      dynamic_by_default: false
+    container:
+      mass_kg: 0.6
+      density: 750
+      friction: [0.7, 0.02, 0.001]
+      restitution: 0.02
+      confidence: estimated
+      dynamic_by_default: false
+    cylinder:
+      mass_kg: 2.5
+      density: 900
+      friction: [0.8, 0.02, 0.001]
+      restitution: 0.02
+      confidence: estimated
+      dynamic_by_default: false
+    pallet:
+      mass_kg: 18.0
+      density: 650
+      friction: [0.9, 0.02, 0.001]
+      restitution: 0.01
+      confidence: estimated
+    shelf:
+      mass_kg: null
+      density: 7800
+      friction: [0.85, 0.02, 0.001]
+      restitution: 0.01
+      confidence: estimated
+    table:
+      mass_kg: null
+      density: 7800
+      friction: [0.85, 0.02, 0.001]
+      restitution: 0.01
+      confidence: estimated
+    scanner:
+      mass_kg: 0.12
+      density: 650
+      friction: [2.5, 0.08, 0.005]
+      restitution: 0.01
+      confidence: estimated
+    floor_marking:
+      mass_kg: null
+      density: null
+      friction: [0.9, 0.02, 0.001]
+      restitution: 0.0
+      confidence: unknown
+collision:
+  use_coacd: false
+  max_coacd_parts: 8
+  simplify_faces: 1500
+  visual_only_categories: [floor_marking, light, camera, cable, duct, pipe, utility_box, door]
+  primitive_static_categories: [shelf, table, pallet, cabinet, barrier]
+  dynamic_categories: [box, container, cylinder, tool, scanner]
+  max_dynamic_volume_m3: 0.35
+randomization:
+  object_pose:
+    xy_noise_m: [-0.02, 0.02]
+    yaw_deg: [-5.0, 5.0]
+  physics:
+    mass_scale: [0.9, 1.1]
+    friction_scale: [0.8, 1.2]

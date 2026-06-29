@@ -1,0 +1,79 @@
+{
+  "assets": [
+    {
+      "attribution": "Prompt2Sim project-authored asset",
+      "construction": "Seven frame members: two full-height side rails, top and bottom bands, and three mullions forming four open vertical slots.",
+      "dimensions_m": [
+        1.25,
+        0.1,
+        1.05
+      ],
+      "generator": "scripts/build_project_warehouse_assets.py",
+      "id": "authored_vertical_slot_barrier_01",
+      "license": "CC0-1.0",
+      "material": "bright orange rough plastic/painted metal PBR material",
+      "output_glb": "assets\\library\\project_authored\\authored_vertical_slot_barrier_01.glb",
+      "output_sha256": "88cfa1d12543473006a725e6faf6618ff0c9a9575176f6e9305550220f4bc86e"
+    },
+    {
+      "attribution": "Prompt2Sim project-authored asset",
+      "construction": "Two joined floor strips forming an L-shaped aisle boundary with raised diagonal black hazard marks.",
+      "dimensions_m": [
+        2.2,
+        1.4,
+        0.015
+      ],
+      "generator": "scripts/build_project_warehouse_assets.py",
+      "id": "authored_hazard_floor_marking_01",
+      "license": "CC0-1.0",
+      "material": "yellow base tape with alternating matte black diagonal marks",
+      "output_glb": "assets\\library\\project_authored\\authored_hazard_floor_marking_01.glb",
+      "output_sha256": "88301a1d848824f2b9c8a1e8bbfc9a015e9d5a2890da765f89343a0d53f1ff53"
+    },
+    {
+      "attribution": "Prompt2Sim project-authored asset",
+      "construction": "Clean closed corrugated shipping carton with intact faces and packing tape across the top and front.",
+      "dimensions_m": [
+        0.55,
+        0.42,
+        0.38
+      ],
+      "generator": "scripts/build_project_warehouse_assets.py",
+      "id": "authored_clean_cardboard_box_01",
+      "license": "CC0-1.0",
+      "material": "kraft cardboard with tan packing tape",
+      "output_glb": "assets\\library\\project_authored\\authored_clean_cardboard_box_01.glb",
+      "output_sha256": "809dc0201d25852240b8c12d9f0c8e0c88359cc5912946ce178478c1b483c8dc"
+    },
+    {
+      "attribution": "Prompt2Sim project-authored asset",
+      "construction": "Light wood rectangular top, gray metal perimeter apron, and four square legs with a fully open underside.",
+      "dimensions_m": [
+        1.6,
+        0.75,
+        0.9
+      ],
+      "generator": "scripts/build_project_warehouse_assets.py",
+      "id": "authored_wood_metal_packing_table_01",
+      "license": "CC0-1.0",
+      "material": "light sealed wood tabletop and rough gray painted metal frame",
+      "output_glb": "assets\\library\\project_authored\\authored_wood_metal_packing_table_01.glb",
+      "output_sha256": "5a02dfc85ef0b37cf1f7bdff79ddb83a7511a3eb0d86a2c8ef6d8868526fd4ed"
+    },
+    {
+      "attribution": "Prompt2Sim project-authored asset",
+      "construction": "Closed wooden shipping crate with solid panels, perimeter frame rails, and crossed diagonal front braces.",
+      "dimensions_m": [
+        0.65,
+        0.55,
+        0.62
+      ],
+      "generator": "scripts/build_project_warehouse_assets.py",
+      "id": "authored_x_braced_wooden_crate_01",
+      "license": "CC0-1.0",
+      "material": "light natural wood panels with darker structural wood rails",
+      "output_glb": "assets\\library\\project_authored\\authored_x_braced_wooden_crate_01.glb",
+      "output_sha256": "c8e5e23cb73552b151ac32c15b0d7a753265be27cacbbaa7f38d552075c5ff9a"
+    }
+  ]
+}

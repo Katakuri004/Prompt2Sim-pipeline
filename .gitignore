@@ -10,12 +10,20 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
+build/
+dist/
+*.egg-info/
 
+data/
+outputs/
 runs/
 models/
+wandb/
 
 assets/library/
 assets/indexes/
+assets/asset_views/
+assets/profiles/
 assets/manifests/hf_cache/
 
 *.pt

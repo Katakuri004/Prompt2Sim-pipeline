@@ -7,6 +7,7 @@ import os
 import re
 import time
 import urllib.request
+from contextlib import ExitStack
 from pathlib import Path
 from typing import Any
 
@@ -162,42 +163,22 @@ class OpenAIClient:
         last_error: Exception | None = None
         for attempt in range(max_retries):
             try:
-                try:
-                    response = self._client.images.generate(
-                        model=model,
-                        prompt=prompt,
-                        size=size,
-                        quality=quality,
-                        n=1,
-                        response_format="b64_json",
-                        output_format="png",
-                    )
-                except Exception as first_exc:
-                    if "response_format" not in str(first_exc) and "output_format" not in str(first_exc):
-                        raise
-                    response = self._client.images.generate(
-                        model=model,
-                        prompt=prompt,
-                        size=size,
-                        quality=quality,
-                        n=1,
-                    )
+                response = self._client.images.generate(
+                    model=model,
+                    prompt=prompt,
+                    size=size,
+                    quality=quality,
+                    n=1,
+                    output_format="png",
+                )
                 item = response.data[0]
-                b64_json = getattr(item, "b64_json", None)
-                if b64_json:
-                    target.write_bytes(base64.b64decode(b64_json))
-                else:
-                    url = getattr(item, "url", None)
-                    if not url:
-                        raise RuntimeError("OpenAI image response did not include b64_json or url")
-                    request = urllib.request.Request(url, headers={"User-Agent": "scenethesis-mvp/0.1"})
-                    with urllib.request.urlopen(request, timeout=120) as result:
-                        target.write_bytes(result.read())
+                _write_image_item(item, target)
                 return {
                     "model": model,
                     "size": size,
                     "quality": quality,
                     "path": str(target),
+                    "operation": "generate",
                     "revised_prompt": getattr(item, "revised_prompt", None),
                 }
             except Exception as exc:
@@ -205,6 +186,83 @@ class OpenAIClient:
                 if attempt < max_retries - 1:
                     time.sleep(_retry_delay_seconds(exc, attempt, base_delay=0.75))
         raise RuntimeError(f"OpenAI image generation failed: {last_error}")
+
+    def edit_image(
+        self,
+        image_path: str | Path,
+        prompt: str,
+        output_path: str | Path,
+        model: str = "gpt-image-1",
+        size: str = "1024x1024",
+        quality: str = "low",
+        reference_image_paths: list[str | Path] | None = None,
+        mask_path: str | Path | None = None,
+        max_retries: int = 3,
+    ) -> dict[str, Any]:
+        if not self._client:
+            raise RuntimeError("OpenAI client is not configured")
+        source = Path(image_path)
+        if not source.is_file():
+            raise RuntimeError(f"OpenAI image edit source does not exist: {source}")
+        references = [Path(path) for path in (reference_image_paths or [])]
+        missing_references = [str(path) for path in references if not path.is_file()]
+        if missing_references:
+            raise RuntimeError("OpenAI image edit references do not exist: " + ", ".join(missing_references))
+        mask = Path(mask_path) if mask_path else None
+        if mask and not mask.is_file():
+            raise RuntimeError(f"OpenAI image edit mask does not exist: {mask}")
+        target = Path(output_path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        last_error: Exception | None = None
+        for attempt in range(max_retries):
+            try:
+                with ExitStack() as stack:
+                    image_files = [stack.enter_context(path.open("rb")) for path in [source, *references]]
+                    request_payload: dict[str, Any] = {
+                        "model": model,
+                        "image": image_files if references else image_files[0],
+                        "prompt": prompt,
+                        "size": size,
+                        "quality": quality,
+                        "input_fidelity": "high",
+                        "n": 1,
+                        "output_format": "png",
+                    }
+                    if mask:
+                        request_payload["mask"] = stack.enter_context(mask.open("rb"))
+                    response = self._client.images.edit(**request_payload)
+                item = response.data[0]
+                _write_image_item(item, target)
+                return {
+                    "model": model,
+                    "size": size,
+                    "quality": quality,
+                    "path": str(target),
+                    "operation": "edit",
+                    "source_image_path": str(source),
+                    "reference_image_paths": [str(path) for path in references],
+                    "mask_path": str(mask) if mask else None,
+                    "input_fidelity": "high",
+                    "revised_prompt": getattr(item, "revised_prompt", None),
+                }
+            except Exception as exc:
+                last_error = exc
+                if attempt < max_retries - 1:
+                    time.sleep(_retry_delay_seconds(exc, attempt, base_delay=0.75))
+        raise RuntimeError(f"OpenAI image edit failed: {last_error}")
+
+
+def _write_image_item(item: Any, target: Path) -> None:
+    b64_json = getattr(item, "b64_json", None)
+    if b64_json:
+        target.write_bytes(base64.b64decode(b64_json))
+        return
+    url = getattr(item, "url", None)
+    if not url:
+        raise RuntimeError("OpenAI image response did not include b64_json or url")
+    request = urllib.request.Request(url, headers={"User-Agent": "scenethesis-mvp/0.1"})
+    with urllib.request.urlopen(request, timeout=120) as result:
+        target.write_bytes(result.read())
 
 
 def _retry_delay_seconds(exc: Exception, attempt: int, base_delay: float = 0.5) -> float:

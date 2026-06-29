@@ -5,17 +5,20 @@ paper_faithful:
   require_cuda: true
   min_free_disk_gb: 10
 scene:
-  bounds: [8.0, 7.0, 3.2]
+  bounds: [10.0, 8.0, 3.5]
   units: meters
+  max_objects: 16
 openai:
-  model: gpt-4o-mini
-  vision_model: gpt-4o
+  model: gpt-5.5
+  vision_model: gpt-5.5
   image_model: gpt-image-1
   max_retries: 5
 image_guidance:
   enabled: true
-  image_size: 1024x1024
-  image_quality: low
+  image_size: 1536x1024
+  image_quality: high
+  max_validation_attempts: 4
+  correction_mode: edit_high_fidelity
 segmentation:
   provider: grounded_sam
   device: cuda
@@ -25,6 +28,8 @@ segmentation:
   sam_checkpoint: models/checkpoints/sam_vit_h_4b8939.pth
   box_threshold: 0.30
   text_threshold: 0.25
+  min_expected_box_iou: 0.10
+  min_expected_box_coverage: 0.20
 depth:
   provider: depth_pro
   device: cuda
@@ -45,12 +50,20 @@ depth_pose_refinement:
   max_scale_estimate_ratio: 1.65
   max_yaw_delta_deg: 18
 asset_retrieval:
-  provider: clip_local_index
+  provider: grs_multiview_vlm
   device: cuda
   index_path: assets/indexes/warehouse_clip_index.npz
   min_score: 0.18
   text_weight: 0.20
   metadata_weight: 0.35
+  top_k: 3
+  min_match_confidence: 0.72
+  min_score_margin: 0.05
+  max_shape_error: 0.70
+  guidance_repair_rounds: 2
+  profile_dir: assets/profiles/warehouse
+  view_dir: assets/asset_views/warehouse
+  profile_resolution: 512
 correspondence:
   enabled: true
   provider: roma
@@ -77,6 +90,7 @@ joint_pose_optimizer:
   depth_scale_weight: 0.85
   depth_yaw_weight: 0.45
   roma_yaw_weight: 0.65
+  lock_structural_supports: true
 physics:
   provider: sdf_pytorch3d
   device: cuda
@@ -84,6 +98,8 @@ physics:
   optimizer: sgd
   max_iters: 120
   learning_rate: 0.03
+  stall_patience: 12
+  min_iters_before_stall: 12
 repair:
   rounds: 2
 render:
@@ -103,5 +119,8 @@ paths:
   asset_registry: configs/warehouse_asset_registry.yaml
   planner_prompt: configs/prompts/planner_system.txt
   judge_prompt: configs/prompts/judge_system.txt
+  asset_profile_prompt: configs/prompts/asset_profile_system.txt
+  asset_match_prompt: configs/prompts/asset_match_system.txt
+  guidance_validation_prompt: configs/prompts/guidance_validation_system.txt
   checkpoints_dir: models/checkpoints
   repos_dir: models/repos

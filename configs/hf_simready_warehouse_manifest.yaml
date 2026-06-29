@@ -5,16 +5,44 @@ disk_budget_gb: 15
 entries:
   - id: hf_forklift_orange_01
     category: forklift
-    name: orange warehouse forklift
+    name: compact walk-behind electric pallet stacker
     dimensions: [2.45, 1.05, 2.05]
     support_kind: none
     support_heights: []
-    tags: [warehouse, forklift, vehicle, logistics, floor, industrial]
+    tags: [warehouse, forklift, pallet_stacker, walk_behind, logistics, floor, industrial]
     color: [0.95, 0.48, 0.08]
     repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
     repo_type: dataset
     source_usd: Props/general/SM_Forklift_A01_Orange_01/SM_Forklift_A01_Orange_01.usd
     thumbnail_path: Props/general/SM_Forklift_A01_Orange_01/.thumbs/256x256/SM_Forklift_A01_Orange_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_forklift_red_01
+    category: forklift
+    name: red enclosed warehouse forklift
+    dimensions: [2.8, 1.25, 2.15]
+    support_kind: none
+    support_heights: []
+    tags: [warehouse, forklift, vehicle, logistics, floor, industrial, enclosed, red]
+    color: [0.72, 0.08, 0.06]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/SM_Forklift_B01_Red_01/SM_Forklift_B01_Red_01.usd
+    thumbnail_path: Props/general/SM_Forklift_B01_Red_01/.thumbs/256x256/SM_Forklift_B01_Red_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_forklift_blue_01
+    category: forklift
+    name: blue enclosed warehouse forklift
+    dimensions: [3.1, 1.35, 2.25]
+    support_kind: none
+    support_heights: []
+    tags: [warehouse, forklift, vehicle, logistics, floor, industrial, enclosed, blue]
+    color: [0.05, 0.18, 0.62]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/SM_Forklift_C01_Blue_01/SM_Forklift_C01_Blue_01.usd
+    thumbnail_path: Props/general/SM_Forklift_C01_Blue_01/.thumbs/256x256/SM_Forklift_C01_Blue_01.usd.png
     license: CC-BY-4.0
     attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
   - id: hf_wood_pallet_01
@@ -145,6 +173,34 @@ entries:
     repo_type: dataset
     source_usd: Props/general/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01.usd
     thumbnail_path: Props/general/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01/.thumbs/256x256/SM_DeluxeSafetyTape10M10CM_E05_YellowBlack_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_metal_stainless_table_01
+    category: table
+    name: stainless steel warehouse worktable
+    dimensions: [1.7999, 0.85, 0.6989]
+    support_kind: surface
+    support_heights: [1.0]
+    tags: [warehouse, table, workbench, packing, stainless, metal, gray, support]
+    color: [0.62, 0.64, 0.64]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/SM_MetalStainlessTable_A03_01/SM_MetalStainlessTable_A03_01.usd
+    thumbnail_path: Props/general/SM_MetalStainlessTable_A03_01/.thumbs/256x256/SM_MetalStainlessTable_A03_01.usd.png
+    license: CC-BY-4.0
+    attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
+  - id: hf_heavy_duty_packing_table_01
+    category: table
+    name: heavy duty gray metal packing table
+    dimensions: [1.8659, 0.9941, 1.2195]
+    support_kind: surface
+    support_heights: [1.0]
+    tags: [warehouse, table, workbench, packing, heavy_duty, metal, gray, support]
+    color: [0.58, 0.60, 0.60]
+    repo_id: nvidia/PhysicalAI-SimReady-Warehouse-01
+    repo_type: dataset
+    source_usd: Props/general/SM_HeavyDutyPackingTable_C01_01/SM_HeavyDutyPackingTable_C01_01.usd
+    thumbnail_path: Props/general/SM_HeavyDutyPackingTable_C01_01/.thumbs/256x256/SM_HeavyDutyPackingTable_C01_01.usd.png
     license: CC-BY-4.0
     attribution: NVIDIA PhysicalAI-SimReady-Warehouse-01
 unresolved_targets:

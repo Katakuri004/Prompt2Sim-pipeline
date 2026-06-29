@@ -1,0 +1,20 @@
+{
+  "assets": [
+    {
+      "attribution": "Derived from NVIDIA PhysicalAI-SimReady-Warehouse-01 SM_MetalStainlessTable_A03_01",
+      "derivation": "Removed exactly ten connected lower-shelf and shelf-hardware components; retained source tabletop, frame, and four legs.",
+      "dimensions_m": [
+        1.7999,
+        0.85,
+        0.6989
+      ],
+      "id": "derived_open_stainless_worktable_01",
+      "license": "CC-BY-4.0",
+      "output_glb": "assets\\library\\derived\\derived_open_stainless_worktable_01.glb",
+      "output_sha256": "6f065a331370ea58fd9324267b37ce07cb56f736db2453d693240511fb8db3f6",
+      "source_asset_id": "hf_metal_stainless_table_01",
+      "source_glb": "assets\\library\\hf_simready\\hf_metal_stainless_table_01\\hf_metal_stainless_table_01.glb",
+      "source_sha256": "c278d1addc6207b8d46326429f65b61950052c6da305cfeb6d68a030e611d0da"
+    }
+  ]
+}

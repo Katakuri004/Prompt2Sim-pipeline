@@ -28,6 +28,8 @@ def build_pipeline_diagnostics(
     correspondence = read_json(target / "correspondence_diagnostics.json") if (target / "correspondence_diagnostics.json").is_file() else {}
     depth_pose = read_json(target / "depth_pose_refinement.json") if (target / "depth_pose_refinement.json").is_file() else {}
     joint_pose = read_json(target / "joint_pose_optimizer.json") if (target / "joint_pose_optimizer.json").is_file() else {}
+    asset_correspondence = read_json(target / "asset_correspondence.json") if (target / "asset_correspondence.json").is_file() else {}
+    guidance_validation = read_json(target / "guidance_validation.json") if (target / "guidance_validation.json").is_file() else {}
 
     segmentation_ids = {
         detection.object_id
@@ -40,7 +42,24 @@ def build_pipeline_diagnostics(
 
     checks = [
         _check("anchor_count", len(anchors) == 1, f"anchors={anchors}"),
+        _check(
+            "guidance_inventory",
+            bool(guidance_validation.get("ok", False)),
+            f"ok={guidance_validation.get('ok', False)}, attempts={len(guidance_validation.get('attempts', []))}",
+        ),
         _check("asset_assignment", not missing_asset_ids, f"missing_asset_ids={missing_asset_ids}"),
+        _check(
+            "asset_correspondence",
+            (
+                bool(asset_correspondence.get("ok", False))
+                and int(asset_correspondence.get("matched_object_count", -1)) == len(scene.objects)
+                and int(asset_correspondence.get("failed_object_count", -1)) == 0
+            ),
+            (
+                f"matched={asset_correspondence.get('matched_object_count', 'missing')}/{len(scene.objects)}, "
+                f"failed={asset_correspondence.get('failed_object_count', 'missing')}"
+            ),
+        ),
         _check(
             "segmentation_coverage",
             segmentation is not None and not segmentation.missing_object_ids and object_ids.issubset(segmentation_ids),
@@ -73,7 +92,10 @@ def build_pipeline_diagnostics(
         _check(
             "render_visual_support",
             bool(render_validation.get("ok", False)),
-            f"visual_support_failure_count={render_validation.get('visual_support_failure_count', 'missing')}",
+            (
+                f"visual_support_failure_count={render_validation.get('visual_support_failure_count', 'missing')}, "
+                f"visual_collision_failure_count={render_validation.get('visual_collision_failure_count', 'missing')}"
+            ),
         ),
         _check(
             "roma_correspondence",
@@ -100,6 +122,9 @@ def build_pipeline_diagnostics(
             "anchor_ids": anchors,
             "segmentation_detection_count": len(segmentation_ids),
             "scene_graph_pointcloud_count": len(graph_ids),
+            "asset_correspondence_matched_count": asset_correspondence.get("matched_object_count"),
+            "asset_correspondence_failed_count": asset_correspondence.get("failed_object_count"),
+            "guidance_validation_attempt_count": len(guidance_validation.get("attempts", [])),
             "depth_pose_scale_updates": depth_pose.get("applied_scale_updates"),
             "depth_pose_yaw_updates": depth_pose.get("applied_yaw_updates"),
             "joint_pose_initial_loss": joint_pose.get("initial_loss", {}).get("total_loss"),
